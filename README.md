@@ -1,1 +1,0 @@
-# tpals.github.io
