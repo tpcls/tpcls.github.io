@@ -223,6 +223,161 @@
   .ref-col td:last-child {
     font-weight: 600; color: var(--text); text-align: right;
   }
+
+  /* ── Score History ── */
+  .history-section {
+    margin-top: 1.25rem;
+  }
+  .history-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0 8px;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .history-title {
+    font-size: 13px; font-weight: 600; color: var(--text-2);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .history-title .h-arrow { font-size: 10px; transition: transform .2s; }
+  .history-title .h-arrow.open { transform: rotate(90deg); }
+  .history-clear {
+    font-size: 11px; color: var(--text-2);
+    background: none; border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 8px;
+    cursor: pointer; font-family: inherit;
+    transition: all .15s;
+  }
+  .history-clear:hover { border-color: #e57373; color: #c62828; }
+
+  .history-body { display: none; }
+  .history-body.open { display: block; }
+
+  .history-empty {
+    font-size: 12px; color: var(--text-2);
+    text-align: center; padding: 16px 0;
+  }
+
+  .history-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 12px; margin-top: 6px;
+  }
+  .history-table th {
+    font-size: 10px; font-weight: 600;
+    color: var(--text-2); text-align: center;
+    padding: 4px 6px; border-bottom: 1px solid var(--border);
+  }
+  .history-table th:first-child { text-align: left; }
+  .history-table td {
+    padding: 7px 6px; border-bottom: 1px solid var(--border);
+    text-align: center; color: var(--text);
+  }
+  .history-table td:first-child { text-align: left; color: var(--text-2); }
+  .history-table tr:last-child td { border-bottom: none; }
+  .history-table tr:hover td { background: var(--bg); }
+
+  .acc-pill {
+    display: inline-block; padding: 2px 7px;
+    border-radius: 20px; font-size: 11px; font-weight: 700;
+  }
+  .acc-pill.high { background: var(--green-bg); color: var(--green); }
+  .acc-pill.mid  { background: var(--warn-bg); color: var(--warn-text); }
+  .acc-pill.low  { background: var(--ng-bg); color: var(--ng-text); }
+
+  .cat-dots { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
+  .cat-dot {
+    font-size: 10px; padding: 1px 5px;
+    border-radius: 10px; font-weight: 500;
+  }
+  .cat-dot.d { background: var(--green-bg); color: var(--green); }
+  .cat-dot.c { background: var(--purple-bg); color: var(--purple); }
+  .cat-dot.g { background: var(--amber-bg); color: var(--amber); }
+
+  .best-badge {
+    font-size: 10px; background: #fff3cd; color: #7d5a00;
+    border-radius: 4px; padding: 1px 5px; margin-left: 4px;
+    font-weight: 600;
+  }
+
+  /* ── 오답 노트 ── */
+  .wrong-section { margin-top: 0; }
+  .wrong-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0 8px;
+    border-top: 1px solid var(--border);
+    cursor: pointer; user-select: none;
+  }
+  .wrong-title {
+    font-size: 13px; font-weight: 600; color: var(--text-2);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .wrong-count-badge {
+    background: var(--ng-bg); color: var(--ng-text);
+    font-size: 10px; font-weight: 700;
+    padding: 1px 7px; border-radius: 20px;
+  }
+  .wrong-body { display: none; padding-bottom: 8px; }
+  .wrong-body.open { display: block; }
+
+  .wrong-empty {
+    font-size: 12px; color: var(--text-2);
+    text-align: center; padding: 16px 0;
+  }
+
+  .review-start-btn {
+    width: 100%; padding: 10px;
+    background: var(--ng-bg); color: var(--ng-text);
+    border: 1.5px solid #f5a0a0; border-radius: var(--radius);
+    font-size: 14px; font-family: inherit; font-weight: 600;
+    cursor: pointer; margin-bottom: 10px;
+    transition: all .15s;
+  }
+  .review-start-btn:hover { background: #fbd5d5; }
+
+  .wrong-list { display: flex; flex-direction: column; gap: 6px; }
+  .wrong-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 8px 10px;
+    font-size: 12px;
+  }
+  .wrong-item-notes { font-weight: 700; font-size: 14px; letter-spacing: -0.5px; }
+  .wrong-item-ans { color: var(--ng-text); font-weight: 600; }
+  .wrong-item-meta { color: var(--text-2); font-size: 11px; display: flex; align-items: center; gap: 6px; }
+  .wrong-del-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-2); font-size: 14px; padding: 2px 4px;
+    border-radius: 4px; transition: all .15s;
+  }
+  .wrong-del-btn:hover { color: #c62828; background: var(--ng-bg); }
+
+  /* ── 복습 모드 배너 ── */
+  .review-banner {
+    display: none; background: var(--ng-bg); color: var(--ng-text);
+    border: 1.5px solid #f5a0a0; border-radius: var(--radius);
+    padding: 10px 14px; margin-bottom: 1rem;
+    font-size: 13px; font-weight: 600;
+    align-items: center; justify-content: space-between;
+  }
+  .review-banner.active { display: flex; }
+  .review-exit-btn {
+    background: none; border: 1px solid #f5a0a0; border-radius: 6px;
+    color: var(--ng-text); font-size: 12px; font-family: inherit;
+    padding: 3px 10px; cursor: pointer; font-weight: 500;
+    transition: all .15s;
+  }
+  .review-exit-btn:hover { background: #fbd5d5; }
+
+  /* 오답 저장 토스트 */
+  .saved-toast {
+    display: inline-block; font-size: 11px;
+    color: var(--ng-text); margin-top: 6px;
+    opacity: 0; transition: opacity .3s;
+  }
+  .saved-toast.show { opacity: 1; }
+
+  /* 복습 중 맞힌 문제 하이라이트 */
+  .feedback.review-ok { background: #e0f2fe; color: #0c4a6e; }
 </style>
 </head>
 <body>
@@ -243,6 +398,11 @@
   </div>
 
   <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+
+  <div class="review-banner" id="review-banner">
+    <span id="review-status">📕 오답 복습 모드</span>
+    <button class="review-exit-btn" onclick="exitReview()">복습 종료</button>
+  </div>
 
   <div class="qcard">
     <div class="qbadge d" id="q-badge">온음계적 음정</div>
@@ -344,6 +504,36 @@
       </div>
     </div>
   </details>
+
+  <!-- 오답 노트 섹션 -->
+  <div class="wrong-section">
+    <div class="wrong-header" onclick="toggleWrong()">
+      <div class="wrong-title">
+        <span class="h-arrow" id="w-arrow">▸</span>
+        📕 오답 노트
+        <span id="wrong-count-badge" class="wrong-count-badge" style="display:none"></span>
+      </div>
+      <button class="history-clear" onclick="event.stopPropagation(); clearWrongNotes()">목록 삭제</button>
+    </div>
+    <div class="wrong-body" id="wrong-body">
+      <div id="wrong-content"></div>
+    </div>
+  </div>
+
+  <!-- 내 기록 섹션 -->
+  <div class="history-section">
+    <div class="history-header" onclick="toggleHistory()">
+      <div class="history-title">
+        <span class="h-arrow" id="h-arrow">▸</span>
+        📊 내 기록
+        <span id="history-count" style="font-size:11px;font-weight:400;"></span>
+      </div>
+      <button class="history-clear" onclick="event.stopPropagation(); clearHistory()">기록 삭제</button>
+    </div>
+    <div class="history-body" id="history-body">
+      <div id="history-content"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -477,12 +667,29 @@ function checkAns() {
   document.getElementById('cnt-ng').textContent = nNg;
   document.getElementById('accuracy').textContent = Math.round(nOk/(nOk+nNg)*100)+'%';
 
+  // 5문제 이상이면 자동 임시 저장
+  if (nOk + nNg >= 5) saveCurrentSession();
+
   const { g, s, n } = curQ.iv;
   const semisExpl = g >= 9
     ? `반음 ${s}개 (단순 ${s-12}반음 + 1옥타브)`
     : `반음 ${s}개`;
 
   fb.style.display = 'block';
+
+  // 복습 모드: 정답이면 오답 노트에서 제거, 오답이면 유지
+  if (reviewMode) {
+    if (isRight) {
+      removeFromWrongNotes(curQ.key);
+    } else {
+      // 오답 노트에서 wrongCount 증가
+      const wl = getWrongNotes();
+      const witem = wl.find(w => w.key === curQ.key);
+      if (witem) { witem.wrongCount++; witem.lastWrong = formatDate(Date.now()); saveWrongNotes(wl); }
+    }
+    reviewIdx++;
+  }
+
   if (!ALL_NAMES.has(attempt)) {
     fb.className = 'feedback wr';
     fb.innerHTML = `⚠ <b>${attempt}</b>은(는) 존재하지 않는 음정입니다.<br>정답: <b>${n}</b> — 도수 ${g}도, ${semisExpl}`;
@@ -491,7 +698,8 @@ function checkAns() {
     fb.innerHTML = `✓ 정답! <b>${n}</b> — 도수 ${g}도, ${semisExpl}`;
   } else {
     fb.className = 'feedback ng';
-    fb.innerHTML = `✗ 오답. 정답: <b>${n}</b> — 도수 ${g}도, ${semisExpl}`;
+    fb.innerHTML = `✗ 오답. 정답: <b>${n}</b> — 도수 ${g}도, ${semisExpl}<br><span class="saved-toast show">📕 오답 노트에 저장됨</span>`;
+    if (!reviewMode) addToWrongNotes(curQ);
   }
 
   // 건반 해설 렌더링
@@ -653,7 +861,381 @@ function renderKeyboard(botSemi, topSemi, botLabel, topLabel, ivName, semitones)
   document.getElementById('keyboard-wrap').style.display = 'block';
 }
 
-function nextQ() { renderQ(); }
+function nextQ() { if (reviewMode) renderReviewQ(); else renderQ(); }
+
+/* ─────────────────────────────────────────
+   점수 기록 시스템 (localStorage)
+───────────────────────────────────────── */
+const HISTORY_KEY = 'interval_quiz_history';
+const SESSION_KEY = 'interval_quiz_session';
+let sessionStart = Date.now();
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveCurrentSession() {
+  if (nOk + nNg === 0) return;
+  const cats = Object.entries(enabled).filter(([,v]) => v).map(([k]) => k);
+  const session = {
+    id: sessionStart,
+    date: formatDate(sessionStart),
+    correct: nOk,
+    wrong: nNg,
+    total: nOk + nNg,
+    accuracy: Math.round(nOk / (nOk + nNg) * 100),
+    cats
+  };
+  // 현재 세션을 임시 저장
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch {}
+}
+
+function finalizeSession() {
+  if (nOk + nNg < 1) return;
+  const raw = localStorage.getItem(SESSION_KEY);
+  if (!raw) return;
+  try {
+    const session = JSON.parse(raw);
+    const history = getHistory();
+    // 같은 sessionStart id가 이미 있으면 업데이트, 없으면 추가
+    const idx = history.findIndex(h => h.id === session.id);
+    if (idx >= 0) history[idx] = session;
+    else history.unshift(session);
+    // 최대 50개 유지
+    if (history.length > 50) history.splice(50);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    localStorage.removeItem(SESSION_KEY);
+    renderHistory();
+  } catch {}
+}
+
+function formatDate(ts) {
+  const d = new Date(ts);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function clearHistory() {
+  if (!confirm('기록을 모두 삭제할까요?')) return;
+  localStorage.removeItem(HISTORY_KEY);
+  localStorage.removeItem(SESSION_KEY);
+  renderHistory();
+}
+
+function toggleHistory() {
+  const body = document.getElementById('history-body');
+  const arrow = document.getElementById('h-arrow');
+  const isOpen = body.classList.toggle('open');
+  arrow.textContent = isOpen ? '▾' : '▸';
+  arrow.classList.toggle('open', isOpen);
+  if (isOpen) renderHistory();
+}
+
+const CAT_LABELS_SHORT = { d: '온음', c: '반음', g: '겹음' };
+
+function renderHistory() {
+  const history = getHistory();
+  const countEl = document.getElementById('history-count');
+  countEl.textContent = history.length > 0 ? `(${history.length}세션)` : '';
+
+  const container = document.getElementById('history-content');
+  if (history.length === 0) {
+    container.innerHTML = '<div class="history-empty">아직 저장된 기록이 없어요.<br>5문제 이상 풀면 자동으로 저장됩니다.</div>';
+    return;
+  }
+
+  // 베스트 정답률 찾기
+  const bestAcc = Math.max(...history.map(h => h.accuracy));
+
+  let rows = history.map((h, i) => {
+    const accClass = h.accuracy >= 80 ? 'high' : h.accuracy >= 50 ? 'mid' : 'low';
+    const isBest = h.accuracy === bestAcc && i === history.findIndex(x => x.accuracy === bestAcc);
+    const catDots = h.cats.map(c =>
+      `<span class="cat-dot ${c}">${CAT_LABELS_SHORT[c]}</span>`
+    ).join('');
+    return `<tr>
+      <td>${h.date}${isBest ? '<span class="best-badge">🏆 최고</span>' : ''}</td>
+      <td>${h.correct}</td>
+      <td>${h.wrong}</td>
+      <td><span class="acc-pill ${accClass}">${h.accuracy}%</span></td>
+      <td><div class="cat-dots">${catDots}</div></td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML = `
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>날짜</th>
+          <th>정답</th>
+          <th>오답</th>
+          <th>정답률</th>
+          <th>유형</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+
+/* ─────────────────────────────────────────
+   오답 노트 시스템
+───────────────────────────────────────── */
+const WRONG_KEY = 'interval_quiz_wrong';
+let reviewMode = false;
+let reviewQueue = [];
+let reviewIdx = 0;
+
+function getWrongNotes() {
+  try { return JSON.parse(localStorage.getItem(WRONG_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveWrongNotes(list) {
+  try { localStorage.setItem(WRONG_KEY, JSON.stringify(list)); } catch {}
+  updateWrongBadge();
+}
+
+function updateWrongBadge() {
+  const list = getWrongNotes();
+  const badge = document.getElementById('wrong-count-badge');
+  if (list.length > 0) {
+    badge.textContent = list.length + '개';
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function qKey(q) {
+  // 고유 키: 아래음+위음 조합
+  return `${q.bot.d}_${q.bot.a}__${q.top.d}_${q.top.a}_${q.top.oc}`;
+}
+
+function addToWrongNotes(q) {
+  const list = getWrongNotes();
+  const key = qKey(q);
+  const existing = list.find(w => w.key === key);
+  if (existing) {
+    existing.wrongCount = (existing.wrongCount || 1) + 1;
+    existing.lastWrong = formatDate(Date.now());
+  } else {
+    list.unshift({
+      key,
+      bot: q.bot,
+      top: q.top,
+      ivName: q.iv.n,
+      ivCat: q.iv.cat,
+      wrongCount: 1,
+      lastWrong: formatDate(Date.now())
+    });
+  }
+  // 최대 100개
+  if (list.length > 100) list.splice(100);
+  saveWrongNotes(list);
+}
+
+function removeFromWrongNotes(key) {
+  let list = getWrongNotes();
+  list = list.filter(w => w.key !== key);
+  saveWrongNotes(list);
+  renderWrongNotes();
+}
+
+function clearWrongNotes() {
+  if (!confirm('오답 목록을 모두 삭제할까요?')) return;
+  localStorage.removeItem(WRONG_KEY);
+  updateWrongBadge();
+  renderWrongNotes();
+}
+
+function toggleWrong() {
+  const body = document.getElementById('wrong-body');
+  const arrow = document.getElementById('w-arrow');
+  const isOpen = body.classList.toggle('open');
+  arrow.textContent = isOpen ? '▾' : '▸';
+  if (isOpen) renderWrongNotes();
+}
+
+function DEGS_NOTE(deg, acc) {
+  const D = ['도','레','미','파','솔','라','시'];
+  return D[deg] + (acc === -1 ? '♭' : acc === 1 ? '♯' : '');
+}
+
+function renderWrongNotes() {
+  const list = getWrongNotes();
+  const container = document.getElementById('wrong-content');
+  if (list.length === 0) {
+    container.innerHTML = '<div class="wrong-empty">오답 목록이 비어있어요!<br>틀린 문제가 자동으로 저장됩니다.</div>';
+    return;
+  }
+
+  const catLabel = { d:'온음계', c:'반음계', g:'겹음정' };
+  const items = list.map(w => {
+    const botStr = DEGS_NOTE(w.bot.d, w.bot.a) + '¹';
+    const topStr = DEGS_NOTE(w.top.d, w.top.a) + (w.top.oc ? '²' : '¹');
+    return `<div class="wrong-item">
+      <div>
+        <div class="wrong-item-notes">${botStr} → ${topStr}</div>
+        <div class="wrong-item-meta">
+          <span class="cat-dot ${w.ivCat}">${catLabel[w.ivCat]}</span>
+          틀린 횟수: ${w.wrongCount}회 · ${w.lastWrong}
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="wrong-item-ans">${w.ivName}</span>
+        <button class="wrong-del-btn" onclick="removeFromWrongNotes('${w.key}')" title="삭제">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <button class="review-start-btn" onclick="startReview()">
+      📕 오답 복습 시작 (${list.length}문제)
+    </button>
+    <div class="wrong-list">${items}</div>`;
+}
+
+/* ── 복습 모드 ── */
+function startReview() {
+  const list = getWrongNotes();
+  if (list.length === 0) return;
+  reviewQueue = list.map(w => ({
+    bot: w.bot,
+    top: w.top,
+    iv: { n: w.ivName, cat: w.ivCat, g: w.top.oc ? w.top.d - w.bot.d + 1 + 7 : w.top.d - w.bot.d + 1, s: 0 },
+    key: w.key
+  }));
+  // shuffle
+  for (let i = reviewQueue.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [reviewQueue[i], reviewQueue[j]] = [reviewQueue[j], reviewQueue[i]];
+  }
+  reviewIdx = 0;
+  reviewMode = true;
+  nOk = 0; nNg = 0; qNum = 0;
+  document.getElementById('cnt-ok').textContent = 0;
+  document.getElementById('cnt-ng').textContent = 0;
+  document.getElementById('accuracy').textContent = '—';
+  document.getElementById('review-banner').classList.add('active');
+  updateReviewStatus();
+  // 오답 노트 패널 닫기
+  const body = document.getElementById('wrong-body');
+  const arrow = document.getElementById('w-arrow');
+  body.classList.remove('open');
+  arrow.textContent = '▸';
+  renderReviewQ();
+}
+
+function exitReview() {
+  reviewMode = false;
+  reviewQueue = [];
+  reviewIdx = 0;
+  document.getElementById('review-banner').classList.remove('active');
+  nOk = 0; nNg = 0; qNum = 0;
+  document.getElementById('cnt-ok').textContent = 0;
+  document.getElementById('cnt-ng').textContent = 0;
+  document.getElementById('accuracy').textContent = '—';
+  renderQ();
+}
+
+function updateReviewStatus() {
+  const remaining = reviewQueue.length;
+  document.getElementById('review-status').textContent =
+    `📕 오답 복습 모드 — ${reviewIdx + 1} / ${remaining}문제`;
+}
+
+function renderReviewQ() {
+  if (reviewIdx >= reviewQueue.length) {
+    // 복습 완료
+    document.getElementById('review-banner').classList.remove('active');
+    reviewMode = false;
+    // 완료 메시지
+    document.getElementById('notes-wrap').innerHTML = '<div style="font-size:32px;text-align:center;padding:10px 0">🎉</div>';
+    const badge = document.getElementById('q-badge');
+    badge.className = 'qbadge d';
+    badge.textContent = '복습 완료!';
+    document.getElementById('feedback').className = 'feedback ok';
+    document.getElementById('feedback').innerHTML = `복습 완료! 정답률: <b>${Math.round(nOk/(nOk+nNg||1)*100)}%</b><br>오답 노트에서 다시 확인해보세요.`;
+    document.getElementById('feedback').style.display = 'block';
+    document.getElementById('keyboard-wrap').style.display = 'none';
+    document.getElementById('next-btn').style.display = 'none';
+    document.getElementById('check-btn').disabled = true;
+    updateWrongBadge();
+    return;
+  }
+
+  answered = false;
+  const rq = reviewQueue[reviewIdx];
+
+  // curQ 형식에 맞게 세팅 (iv.g는 건반 렌더에만 쓰임, s는 반음계산)
+  const { BASE: B } = (() => {
+    const BASE = [0,2,4,5,7,9,11];
+    return { BASE };
+  })();
+  const BASE_LOCAL = [0,2,4,5,7,9,11];
+  const botSemi = BASE_LOCAL[rq.bot.d] + rq.bot.a;
+  const topSemi = BASE_LOCAL[rq.top.d] + rq.top.a + rq.top.oc * 12;
+  const semitones = topSemi - botSemi;
+
+  // iv.s 계산
+  rq.iv.s = semitones;
+  // iv.g 계산
+  const gDiff = rq.top.d - rq.bot.d + 1;
+  rq.iv.g = rq.top.oc > 0 ? gDiff + 7 : gDiff;
+
+  curQ = rq;
+  qNum++;
+
+  document.getElementById('q-num').textContent = qNum;
+  const badge = document.getElementById('q-badge');
+  badge.className = 'qbadge ' + rq.iv.cat;
+  badge.textContent = CAT_LABELS[rq.iv.cat];
+
+  const botOct = 1;
+  const topOct = 1 + rq.top.oc;
+  document.getElementById('notes-wrap').innerHTML =
+    noteHTML(rq.bot.d, rq.bot.a, botOct) +
+    '<div class="arrow">→</div>' +
+    noteHTML(rq.top.d, rq.top.a, topOct);
+
+  document.getElementById('q-sel').value = '';
+  document.getElementById('d-sel').value = '';
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('keyboard-wrap').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('check-btn').disabled = false;
+  document.getElementById('prog-bar').style.width = Math.min((reviewIdx)/reviewQueue.length*100, 100) + '%';
+  updateReviewStatus();
+}
+
+// 페이지 떠날 때 세션 확정 저장
+window.addEventListener('beforeunload', finalizeSession);
+
+// 페이지 로드 시 이전 임시 세션 확정 + 기록 수 표시
+(function initHistory() {
+  const raw = localStorage.getItem(SESSION_KEY);
+  if (raw) {
+    try {
+      const prev = JSON.parse(raw);
+      if (prev.id !== sessionStart) {
+        const history = getHistory();
+        const idx = history.findIndex(h => h.id === prev.id);
+        if (idx >= 0) history[idx] = prev;
+        else history.unshift(prev);
+        if (history.length > 50) history.splice(50);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        localStorage.removeItem(SESSION_KEY);
+      }
+    } catch {}
+  }
+  updateWrongBadge();
+  const hist = getHistory();
+  if (hist.length > 0) {
+    document.getElementById('history-count').textContent = '(' + hist.length + '세션)';
+  }
+})();
+
 renderQ();
 </script>
 </body>
