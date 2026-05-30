@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>음정 퀴즈</title>
+<title>음악 이론 퀴즈</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
 
@@ -18,6 +18,8 @@
     --green: #0f6e56; --green-bg: #e1f5ee; --green-border: #5dcaa5;
     --purple: #3c3489; --purple-bg: #eeedfe; --purple-border: #afa9ec;
     --amber: #633806; --amber-bg: #faeeda; --amber-border: #ef9f27;
+    --blue: #1e40af; --blue-bg: #dbeafe; --blue-border: #93c5fd;
+    --rose: #9f1239; --rose-bg: #ffe4e6; --rose-border: #fda4af;
     --ok-bg: #e1f5ee; --ok-text: #085041;
     --ng-bg: #fde8e8; --ng-text: #9b1c1c;
     --warn-bg: #fef3cd; --warn-text: #7d5a00;
@@ -25,16 +27,57 @@
     --shadow: 0 1px 3px rgba(0,0,0,.08);
   }
 
+  /* ── Navigation ── */
+  .nav-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface);
+    border-bottom: 1.5px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    display: flex;
+  }
+  .nav-inner {
+    width: 100%;
+    display: flex; align-items: center;
+    padding: 0 1.25rem; gap: 0;
+  }
+  .nav-logo {
+    font-size: 16px; font-weight: 800;
+    color: var(--text); letter-spacing: -0.5px;
+    margin-right: auto; padding: 14px 0;
+    white-space: nowrap;
+  }
+  .nav-tabs { display: flex; gap: 2px; }
+  .nav-tab {
+    padding: 14px 16px;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-2);
+    border: none; background: none;
+    cursor: pointer; font-family: inherit;
+    border-bottom: 2.5px solid transparent;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active-interval { color: var(--green); border-bottom-color: var(--green); }
+  .nav-tab.active-chord { color: var(--purple); border-bottom-color: var(--purple); }
+
   body {
     font-family: 'Noto Sans KR', sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .page {
+    display: none;
+    width: 100%;
     justify-content: center;
     padding: 2rem 1rem;
   }
-
+  .page.active { display: flex; }
   .container { width: 100%; max-width: 560px; }
 
   h1 {
@@ -43,8 +86,8 @@
     letter-spacing: -0.5px;
   }
 
-  /* ── Category filter ── */
-  .filter-row { display: flex; gap: 8px; margin-bottom: 1.25rem; }
+  /* ── Filter row ── */
+  .filter-row { display: flex; gap: 8px; margin-bottom: 1.25rem; flex-wrap: wrap; }
   .fbt {
     flex: 1; padding: 8px 6px;
     border: 1.5px solid var(--border);
@@ -53,305 +96,36 @@
     color: var(--text-2);
     font-size: 13px; font-family: inherit;
     cursor: pointer; transition: all .15s;
-    font-weight: 500;
+    font-weight: 500; min-width: 60px;
   }
+  /* interval filter colors */
   .fbt.on-d { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
   .fbt.on-c { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-border); }
   .fbt.on-g { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
+  /* chord filter colors */
+  .fbt.on-major { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+  .fbt.on-minor { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-border); }
+  .fbt.on-dim   { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
+  .fbt.on-aug   { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+  .fbt.on-sus4  { background: var(--rose-bg); color: var(--rose); border-color: var(--rose-border); }
 
-  /* ── Score row ── */
+  /* ── Score ── */
   .score-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.25rem; }
   .metric {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 8px;
-    text-align: center;
-    box-shadow: var(--shadow);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 10px 8px;
+    text-align: center; box-shadow: var(--shadow);
   }
   .metric-label { font-size: 10px; color: var(--text-2); margin-bottom: 3px; }
   .metric-val { font-size: 22px; font-weight: 700; }
 
   /* ── Progress ── */
   .prog-wrap { background: var(--border); height: 3px; border-radius: 3px; margin-bottom: 1.25rem; overflow: hidden; }
-  .prog-bar { height: 3px; background: var(--green); border-radius: 3px; transition: width .3s ease; }
+  .prog-bar { height: 3px; border-radius: 3px; transition: width .3s ease; }
+  .prog-bar.interval { background: var(--green); }
+  .prog-bar.chord { background: var(--purple); }
 
-  /* ── Question card ── */
-  .qcard {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 1.75rem 1.5rem;
-    box-shadow: var(--shadow);
-    margin-bottom: 1rem;
-  }
-
-  .qbadge {
-    display: inline-block; font-size: 11px; font-weight: 600;
-    padding: 3px 10px; border-radius: 20px; margin-bottom: 1rem;
-    letter-spacing: 0.3px;
-  }
-  .qbadge.d { background: var(--green-bg); color: var(--green); }
-  .qbadge.c { background: var(--purple-bg); color: var(--purple); }
-  .qbadge.g { background: var(--amber-bg); color: var(--amber); }
-
-  /* ── Notes display ── */
-  .notes-wrap {
-    display: flex; align-items: baseline; justify-content: center;
-    gap: 12px; margin: 1rem 0 1.25rem;
-  }
-  .note-item {
-    display: flex; align-items: flex-start;
-    font-size: 40px; font-weight: 700; line-height: 1; color: var(--text);
-    letter-spacing: -1px;
-  }
-  .note-item sup {
-    font-size: 13px; font-weight: 500;
-    color: var(--text-2);
-    margin-top: 2px;
-    margin-left: 1px;
-    line-height: 1;
-  }
-  .arrow { font-size: 24px; color: var(--text-2); align-self: center; }
-
-  /* ── Answer dropdowns ── */
-  .ans-row { display: flex; gap: 8px; align-items: stretch; }
-  .ans-row select {
-    flex: 1; height: 40px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface);
-    color: var(--text);
-    font-size: 14px; font-family: inherit;
-    padding: 0 10px;
-    cursor: pointer;
-    appearance: auto;
-  }
-  .ans-row select:focus { outline: 2px solid var(--green); border-color: transparent; }
-  #check-btn {
-    height: 40px; padding: 0 18px;
-    background: var(--text); color: #fff;
-    border: none; border-radius: var(--radius);
-    font-size: 14px; font-family: inherit; font-weight: 600;
-    cursor: pointer; white-space: nowrap;
-    transition: opacity .15s;
-  }
-  #check-btn:hover:not(:disabled) { opacity: .85; }
-  #check-btn:disabled { opacity: .4; cursor: not-allowed; }
-
-  /* ── Feedback ── */
-  .feedback {
-    border-radius: var(--radius);
-    padding: 12px 14px; margin-top: 1rem;
-    font-size: 14px; line-height: 1.5;
-    font-weight: 500;
-  }
-  .feedback.ok { background: var(--ok-bg); color: var(--ok-text); }
-  .feedback.ng { background: var(--ng-bg); color: var(--ng-text); }
-  .feedback.wr { background: var(--warn-bg); color: var(--warn-text); }
-
-  /* ── Keyboard explanation ── */
-  #keyboard-wrap {
-    display: none;
-    margin-top: 1rem;
-    background: #fafaf9;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 12px 12px;
-  }
-  .kb-title {
-    font-size: 11px; font-weight: 600;
-    color: var(--text-2); margin-bottom: 8px;
-    letter-spacing: 0.3px;
-  }
-  .kb-scroll {
-    overflow-x: auto;
-    padding-bottom: 4px;
-  }
-  .kb-legend {
-    display: flex; gap: 14px; justify-content: center;
-    margin-top: 9px; flex-wrap: wrap;
-  }
-  .kb-legend-item {
-    display: flex; align-items: center; gap: 5px;
-    font-size: 11px; color: var(--text-2);
-  }
-  .kb-legend-dot {
-    width: 10px; height: 10px; border-radius: 2px;
-    flex-shrink: 0;
-  }
-
-  /* ── Next button ── */
-  .next-btn {
-    margin-top: .75rem; width: 100%;
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px; cursor: pointer;
-    color: var(--text); font-size: 14px; font-family: inherit; font-weight: 500;
-    transition: background .15s;
-  }
-  .next-btn:hover { background: var(--bg); }
-
-  /* ── Reference table ── */
-  details { margin-top: .5rem; }
-  summary {
-    font-size: 12px; color: var(--text-2);
-    cursor: pointer; padding: 5px 0;
-    user-select: none; list-style: none;
-  }
-  summary::before { content: '▸ '; }
-  details[open] summary::before { content: '▾ '; }
-  .ref-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 10px; margin-top: 8px;
-  }
-  .ref-col { font-size: 11px; }
-  .ref-col h4 {
-    font-size: 11px; font-weight: 600; padding: 3px 7px;
-    border-radius: 6px; margin-bottom: 5px;
-  }
-  .ref-col.d h4 { background: var(--green-bg); color: var(--green); }
-  .ref-col.c h4 { background: var(--purple-bg); color: var(--purple); }
-  .ref-col.g h4 { background: var(--amber-bg); color: var(--amber); }
-  .ref-col table { width: 100%; border-collapse: collapse; }
-  .ref-col td {
-    padding: 2px 5px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-2);
-  }
-  .ref-col td:last-child {
-    font-weight: 600; color: var(--text); text-align: right;
-  }
-
-  /* ── Score History ── */
-  .history-section {
-    margin-top: 1.25rem;
-  }
-  .history-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 0 8px;
-    border-top: 1px solid var(--border);
-    cursor: pointer;
-    user-select: none;
-  }
-  .history-title {
-    font-size: 13px; font-weight: 600; color: var(--text-2);
-    display: flex; align-items: center; gap: 6px;
-  }
-  .history-title .h-arrow { font-size: 10px; transition: transform .2s; }
-  .history-title .h-arrow.open { transform: rotate(90deg); }
-  .history-clear {
-    font-size: 11px; color: var(--text-2);
-    background: none; border: 1px solid var(--border);
-    border-radius: 6px; padding: 3px 8px;
-    cursor: pointer; font-family: inherit;
-    transition: all .15s;
-  }
-  .history-clear:hover { border-color: #e57373; color: #c62828; }
-
-  .history-body { display: none; }
-  .history-body.open { display: block; }
-
-  .history-empty {
-    font-size: 12px; color: var(--text-2);
-    text-align: center; padding: 16px 0;
-  }
-
-  .history-table {
-    width: 100%; border-collapse: collapse;
-    font-size: 12px; margin-top: 6px;
-  }
-  .history-table th {
-    font-size: 10px; font-weight: 600;
-    color: var(--text-2); text-align: center;
-    padding: 4px 6px; border-bottom: 1px solid var(--border);
-  }
-  .history-table th:first-child { text-align: left; }
-  .history-table td {
-    padding: 7px 6px; border-bottom: 1px solid var(--border);
-    text-align: center; color: var(--text);
-  }
-  .history-table td:first-child { text-align: left; color: var(--text-2); }
-  .history-table tr:last-child td { border-bottom: none; }
-  .history-table tr:hover td { background: var(--bg); }
-
-  .acc-pill {
-    display: inline-block; padding: 2px 7px;
-    border-radius: 20px; font-size: 11px; font-weight: 700;
-  }
-  .acc-pill.high { background: var(--green-bg); color: var(--green); }
-  .acc-pill.mid  { background: var(--warn-bg); color: var(--warn-text); }
-  .acc-pill.low  { background: var(--ng-bg); color: var(--ng-text); }
-
-  .cat-dots { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
-  .cat-dot {
-    font-size: 10px; padding: 1px 5px;
-    border-radius: 10px; font-weight: 500;
-  }
-  .cat-dot.d { background: var(--green-bg); color: var(--green); }
-  .cat-dot.c { background: var(--purple-bg); color: var(--purple); }
-  .cat-dot.g { background: var(--amber-bg); color: var(--amber); }
-
-  .best-badge {
-    font-size: 10px; background: #fff3cd; color: #7d5a00;
-    border-radius: 4px; padding: 1px 5px; margin-left: 4px;
-    font-weight: 600;
-  }
-
-  /* ── 오답 노트 ── */
-  .wrong-section { margin-top: 0; }
-  .wrong-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 0 8px;
-    border-top: 1px solid var(--border);
-    cursor: pointer; user-select: none;
-  }
-  .wrong-title {
-    font-size: 13px; font-weight: 600; color: var(--text-2);
-    display: flex; align-items: center; gap: 6px;
-  }
-  .wrong-count-badge {
-    background: var(--ng-bg); color: var(--ng-text);
-    font-size: 10px; font-weight: 700;
-    padding: 1px 7px; border-radius: 20px;
-  }
-  .wrong-body { display: none; padding-bottom: 8px; }
-  .wrong-body.open { display: block; }
-
-  .wrong-empty {
-    font-size: 12px; color: var(--text-2);
-    text-align: center; padding: 16px 0;
-  }
-
-  .review-start-btn {
-    width: 100%; padding: 10px;
-    background: var(--ng-bg); color: var(--ng-text);
-    border: 1.5px solid #f5a0a0; border-radius: var(--radius);
-    font-size: 14px; font-family: inherit; font-weight: 600;
-    cursor: pointer; margin-bottom: 10px;
-    transition: all .15s;
-  }
-  .review-start-btn:hover { background: #fbd5d5; }
-
-  .wrong-list { display: flex; flex-direction: column; gap: 6px; }
-  .wrong-item {
-    display: flex; align-items: center; justify-content: space-between;
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 8px 10px;
-    font-size: 12px;
-  }
-  .wrong-item-notes { font-weight: 700; font-size: 14px; letter-spacing: -0.5px; }
-  .wrong-item-ans { color: var(--ng-text); font-weight: 600; }
-  .wrong-item-meta { color: var(--text-2); font-size: 11px; display: flex; align-items: center; gap: 6px; }
-  .wrong-del-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--text-2); font-size: 14px; padding: 2px 4px;
-    border-radius: 4px; transition: all .15s;
-  }
-  .wrong-del-btn:hover { color: #c62828; background: var(--ng-bg); }
-
-  /* ── 복습 모드 배너 ── */
+  /* ── Review banner ── */
   .review-banner {
     display: none; background: var(--ng-bg); color: var(--ng-text);
     border: 1.5px solid #f5a0a0; border-radius: var(--radius);
@@ -363,58 +137,342 @@
   .review-exit-btn {
     background: none; border: 1px solid #f5a0a0; border-radius: 6px;
     color: var(--ng-text); font-size: 12px; font-family: inherit;
-    padding: 3px 10px; cursor: pointer; font-weight: 500;
-    transition: all .15s;
+    padding: 3px 10px; cursor: pointer; font-weight: 500; transition: all .15s;
   }
   .review-exit-btn:hover { background: #fbd5d5; }
 
-  /* 오답 저장 토스트 */
-  .saved-toast {
-    display: inline-block; font-size: 11px;
-    color: var(--ng-text); margin-top: 6px;
-    opacity: 0; transition: opacity .3s;
+  /* ── Question card ── */
+  .qcard {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem 1.5rem;
+    box-shadow: var(--shadow); margin-bottom: 1rem;
   }
-  .saved-toast.show { opacity: 1; }
+  .qbadge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 1rem;
+    letter-spacing: 0.3px;
+  }
+  .qbadge.d { background: var(--green-bg); color: var(--green); }
+  .qbadge.c { background: var(--purple-bg); color: var(--purple); }
+  .qbadge.g { background: var(--amber-bg); color: var(--amber); }
+  .qbadge.major { background: var(--green-bg); color: var(--green); }
+  .qbadge.minor { background: var(--purple-bg); color: var(--purple); }
+  .qbadge.dim   { background: var(--amber-bg); color: var(--amber); }
+  .qbadge.aug   { background: var(--blue-bg); color: var(--blue); }
+  .qbadge.sus4  { background: var(--rose-bg); color: var(--rose); }
 
-  /* 복습 중 맞힌 문제 하이라이트 */
-  .feedback.review-ok { background: #e0f2fe; color: #0c4a6e; }
+  /* ── Interval: Notes display ── */
+  .notes-wrap {
+    display: flex; align-items: baseline; justify-content: center;
+    gap: 12px; margin: 1rem 0 1.25rem;
+  }
+  .note-item {
+    display: flex; align-items: flex-start;
+    font-size: 40px; font-weight: 700; line-height: 1; color: var(--text);
+    letter-spacing: -1px;
+  }
+  .note-item sup {
+    font-size: 13px; font-weight: 500;
+    color: var(--text-2); margin-top: 2px; margin-left: 1px; line-height: 1;
+  }
+  .arrow { font-size: 24px; color: var(--text-2); align-self: center; }
+
+  /* ── Interval: Answer dropdowns ── */
+  .ans-row { display: flex; gap: 8px; align-items: stretch; }
+  .ans-row select {
+    flex: 1; height: 40px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px; font-family: inherit;
+    padding: 0 10px; cursor: pointer; appearance: auto;
+  }
+  .ans-row select:focus { outline: 2px solid var(--green); border-color: transparent; }
+  #i-check-btn {
+    height: 40px; padding: 0 18px;
+    background: var(--text); color: #fff;
+    border: none; border-radius: var(--radius);
+    font-size: 14px; font-family: inherit; font-weight: 600;
+    cursor: pointer; white-space: nowrap; transition: opacity .15s;
+  }
+  #i-check-btn:hover:not(:disabled) { opacity: .85; }
+  #i-check-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── Chord: Root display ── */
+  .root-prompt {
+    text-align: center;
+    margin: 0.5rem 0 0.25rem;
+    font-size: 13px; color: var(--text-2); font-weight: 500;
+  }
+  .root-note {
+    text-align: center;
+    font-size: 64px; font-weight: 800;
+    letter-spacing: -2px; line-height: 1;
+    margin-bottom: 0.15rem; color: var(--text);
+  }
+
+  /* ── Chord: root pill ── */
+  .chord-root-row {
+    display: flex; justify-content: center; margin: .5rem 0 1rem;
+  }
+  .chord-root-pill {
+    background: var(--green-bg); border: 2px solid var(--green-border);
+    color: var(--green); font-size: 18px; font-weight: 700;
+    border-radius: 20px; padding: 6px 22px;
+  }
+
+  /* ── Chord: drop row ── */
+  .chord-drop-row {
+    display: flex; align-items: flex-end; gap: 10px; margin-bottom: .75rem;
+  }
+  .chord-drop-col { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  .drop-label {
+    font-size: 11px; font-weight: 600; color: var(--text-2);
+    letter-spacing: 0.4px; text-align: center;
+  }
+  .chord-select {
+    width: 100%; height: 44px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface); color: var(--text);
+    font-size: 15px; font-family: inherit; font-weight: 600;
+    padding: 0 10px; cursor: pointer; appearance: auto;
+    transition: border-color .15s;
+  }
+  .chord-select:focus { outline: 2px solid var(--purple); border-color: transparent; }
+  .chord-select.ok { border-color: var(--green-border); background: var(--green-bg); color: var(--green); }
+  .chord-select.ng { border-color: #f5a0a0; background: #fde8e8; color: #9b1c1c; }
+  .chord-select:disabled { opacity: .7; cursor: not-allowed; }
+  .chord-drop-sep {
+    font-size: 22px; font-weight: 300; color: var(--text-2);
+    padding-bottom: 10px; flex-shrink: 0;
+  }
+
+  /* ── Chord: check row ── */
+  .check-row { display: flex; gap: 8px; }
+  #c-reset-btn {
+    height: 44px; padding: 0 16px;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px; font-family: inherit; font-weight: 500;
+    color: var(--text-2); cursor: pointer; transition: all .15s;
+  }
+  #c-reset-btn:hover { background: var(--bg); }
+
+  /* ── Chord: structure hint ── */
+  .structure-hint {
+    display: flex; justify-content: center; gap: 8px;
+    margin: 0.75rem 0 0; flex-wrap: wrap;
+  }
+  .hint-pill {
+    font-size: 11px; padding: 3px 10px;
+    border-radius: 20px; font-weight: 600;
+    background: var(--border); color: var(--text-2);
+  }
+  .hint-pill.root  { background: var(--green-bg); color: var(--green); }
+  .hint-pill.third { background: var(--purple-bg); color: var(--purple); }
+  .hint-pill.fifth { background: var(--blue-bg); color: var(--blue); }
+
+  /* Check btn for chord */
+  #c-check-btn {
+    flex: 1; height: 44px;
+    background: var(--text); color: #fff;
+    border: none; border-radius: var(--radius);
+    font-size: 15px; font-family: inherit; font-weight: 700;
+    cursor: pointer; transition: opacity .15s;
+  }
+  #c-check-btn:hover:not(:disabled) { opacity: .85; }
+  #c-check-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── Feedback ── */
+  .feedback {
+    border-radius: var(--radius); padding: 12px 14px; margin-top: 1rem;
+    font-size: 14px; line-height: 1.5; font-weight: 500;
+  }
+  .feedback.ok { background: var(--ok-bg); color: var(--ok-text); }
+  .feedback.ng { background: var(--ng-bg); color: var(--ng-text); }
+  .feedback.wr { background: var(--warn-bg); color: var(--warn-text); }
+
+  /* ── Keyboard ── */
+  .keyboard-wrap {
+    display: none; margin-top: 1rem;
+    background: #fafaf9; border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 10px 12px 12px;
+  }
+  .kb-title { font-size: 11px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; letter-spacing: 0.3px; }
+  .kb-scroll { overflow-x: auto; padding-bottom: 4px; }
+  .kb-legend { display: flex; gap: 14px; justify-content: center; margin-top: 9px; flex-wrap: wrap; }
+  .kb-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-2); }
+  .kb-legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* ── Next button ── */
+  .next-btn {
+    margin-top: .75rem; width: 100%;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 10px; cursor: pointer;
+    color: var(--text); font-size: 14px; font-family: inherit; font-weight: 500;
+    transition: background .15s;
+  }
+  .next-btn:hover { background: var(--bg); }
+
+  /* ── Ref tables ── */
+  details { margin-top: .5rem; }
+  summary {
+    font-size: 12px; color: var(--text-2);
+    cursor: pointer; padding: 5px 0;
+    user-select: none; list-style: none;
+  }
+  summary::before { content: '▸ '; }
+  details[open] summary::before { content: '▾ '; }
+  .ref-grid { display: grid; gap: 10px; margin-top: 8px; }
+  .ref-grid.cols3 { grid-template-columns: repeat(3, 1fr); }
+  .ref-grid.cols5 { grid-template-columns: repeat(5, 1fr); }
+  .ref-col { font-size: 11px; }
+  .ref-col h4 {
+    font-size: 11px; font-weight: 600; padding: 3px 7px;
+    border-radius: 6px; margin-bottom: 5px;
+  }
+  .ref-col.d h4 { background: var(--green-bg); color: var(--green); }
+  .ref-col.c h4 { background: var(--purple-bg); color: var(--purple); }
+  .ref-col.g h4 { background: var(--amber-bg); color: var(--amber); }
+  .ref-col.major h4 { background: var(--green-bg); color: var(--green); }
+  .ref-col.minor h4 { background: var(--purple-bg); color: var(--purple); }
+  .ref-col.dim h4   { background: var(--amber-bg); color: var(--amber); }
+  .ref-col.aug h4   { background: var(--blue-bg); color: var(--blue); }
+  .ref-col.sus4 h4  { background: var(--rose-bg); color: var(--rose); }
+  .ref-col table { width: 100%; border-collapse: collapse; }
+  .ref-col td {
+    padding: 2px 5px; border-bottom: 1px solid var(--border); color: var(--text-2);
+  }
+  .ref-col td:last-child { font-weight: 600; color: var(--text); text-align: right; }
+
+  /* ── History ── */
+  .history-section { margin-top: 1.25rem; }
+  .history-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0 8px; border-top: 1px solid var(--border);
+    cursor: pointer; user-select: none;
+  }
+  .history-title { font-size: 13px; font-weight: 600; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
+  .history-clear {
+    font-size: 11px; color: var(--text-2);
+    background: none; border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 8px;
+    cursor: pointer; font-family: inherit; transition: all .15s;
+  }
+  .history-clear:hover { border-color: #e57373; color: #c62828; }
+  .history-body { display: none; }
+  .history-body.open { display: block; }
+  .history-empty { font-size: 12px; color: var(--text-2); text-align: center; padding: 16px 0; }
+  .history-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
+  .history-table th {
+    font-size: 10px; font-weight: 600; color: var(--text-2);
+    text-align: center; padding: 4px 6px; border-bottom: 1px solid var(--border);
+  }
+  .history-table th:first-child { text-align: left; }
+  .history-table td { padding: 7px 6px; border-bottom: 1px solid var(--border); text-align: center; color: var(--text); }
+  .history-table td:first-child { text-align: left; color: var(--text-2); }
+  .history-table tr:last-child td { border-bottom: none; }
+  .history-table tr:hover td { background: var(--bg); }
+  .acc-pill { display: inline-block; padding: 2px 7px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .acc-pill.high { background: var(--green-bg); color: var(--green); }
+  .acc-pill.mid  { background: var(--warn-bg); color: var(--warn-text); }
+  .acc-pill.low  { background: var(--ng-bg); color: var(--ng-text); }
+  .cat-dots { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
+  .cat-dot { font-size: 10px; padding: 1px 5px; border-radius: 10px; font-weight: 500; }
+  .cat-dot.d { background: var(--green-bg); color: var(--green); }
+  .cat-dot.c { background: var(--purple-bg); color: var(--purple); }
+  .cat-dot.g { background: var(--amber-bg); color: var(--amber); }
+  .type-badge { font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 600; }
+  .type-badge.major { background: var(--green-bg); color: var(--green); }
+  .type-badge.minor { background: var(--purple-bg); color: var(--purple); }
+  .type-badge.dim   { background: var(--amber-bg); color: var(--amber); }
+  .type-badge.aug   { background: var(--blue-bg); color: var(--blue); }
+  .type-badge.sus4  { background: var(--rose-bg); color: var(--rose); }
+  .best-badge { font-size: 10px; background: #fff3cd; color: #7d5a00; border-radius: 4px; padding: 1px 5px; margin-left: 4px; font-weight: 600; }
+
+  /* ── Wrong notes ── */
+  .wrong-section { margin-top: 0; }
+  .wrong-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0 8px; border-top: 1px solid var(--border);
+    cursor: pointer; user-select: none;
+  }
+  .wrong-title { font-size: 13px; font-weight: 600; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
+  .wrong-count-badge { background: var(--ng-bg); color: var(--ng-text); font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; }
+  .wrong-body { display: none; padding-bottom: 8px; }
+  .wrong-body.open { display: block; }
+  .wrong-empty { font-size: 12px; color: var(--text-2); text-align: center; padding: 16px 0; }
+  .review-start-btn {
+    width: 100%; padding: 10px;
+    background: var(--ng-bg); color: var(--ng-text);
+    border: 1.5px solid #f5a0a0; border-radius: var(--radius);
+    font-size: 14px; font-family: inherit; font-weight: 600;
+    cursor: pointer; margin-bottom: 10px; transition: all .15s;
+  }
+  .review-start-btn:hover { background: #fbd5d5; }
+  .wrong-list { display: flex; flex-direction: column; gap: 6px; }
+  .wrong-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 8px 10px; font-size: 12px;
+  }
+  .wrong-item-notes { font-weight: 700; font-size: 14px; letter-spacing: -0.5px; }
+  .wrong-item-chord { font-weight: 700; font-size: 15px; letter-spacing: -0.5px; }
+  .wrong-item-ans { color: var(--ng-text); font-weight: 600; }
+  .wrong-item-meta { color: var(--text-2); font-size: 11px; display: flex; align-items: center; gap: 6px; }
+  .wrong-del-btn { background: none; border: none; cursor: pointer; color: var(--text-2); font-size: 14px; padding: 2px 4px; border-radius: 4px; transition: all .15s; }
+  .wrong-del-btn:hover { color: #c62828; background: var(--ng-bg); }
 </style>
 </head>
 <body>
+
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <span class="nav-logo">🎵 음악 이론</span>
+    <div class="nav-tabs">
+      <button class="nav-tab active-interval" id="tab-interval" onclick="switchTab('interval')">음정 퀴즈</button>
+      <button class="nav-tab" id="tab-chord" onclick="switchTab('chord')">코드 퀴즈</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     PAGE: 음정 퀴즈
+════════════════════════════════════════════ -->
+<div class="page active" id="page-interval">
 <div class="container">
   <h1>🎵 음정 퀴즈</h1>
 
   <div class="filter-row">
-    <button class="fbt on-d" id="btn-d" onclick="toggleCat('d')">온음계</button>
-    <button class="fbt on-c" id="btn-c" onclick="toggleCat('c')">반음계</button>
-    <button class="fbt on-g" id="btn-g" onclick="toggleCat('g')">겹음정</button>
+    <button class="fbt on-d" id="btn-d" onclick="iToggleCat('d')">온음계</button>
+    <button class="fbt on-c" id="btn-c" onclick="iToggleCat('c')">반음계</button>
+    <button class="fbt on-g" id="btn-g" onclick="iToggleCat('g')">겹음정</button>
   </div>
 
   <div class="score-row">
-    <div class="metric"><div class="metric-label">맞힌 문제</div><div class="metric-val" id="cnt-ok">0</div></div>
-    <div class="metric"><div class="metric-label">틀린 문제</div><div class="metric-val" id="cnt-ng">0</div></div>
-    <div class="metric"><div class="metric-label">정답률</div><div class="metric-val" id="accuracy">—</div></div>
-    <div class="metric"><div class="metric-label">문제 번호</div><div class="metric-val" id="q-num">1</div></div>
+    <div class="metric"><div class="metric-label">맞힌 문제</div><div class="metric-val" id="i-cnt-ok">0</div></div>
+    <div class="metric"><div class="metric-label">틀린 문제</div><div class="metric-val" id="i-cnt-ng">0</div></div>
+    <div class="metric"><div class="metric-label">정답률</div><div class="metric-val" id="i-accuracy">—</div></div>
+    <div class="metric"><div class="metric-label">문제 번호</div><div class="metric-val" id="i-q-num">1</div></div>
   </div>
+  <div class="prog-wrap"><div class="prog-bar interval" id="i-prog-bar" style="width:0%"></div></div>
 
-  <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
-
-  <div class="review-banner" id="review-banner">
-    <span id="review-status">📕 오답 복습 모드</span>
-    <button class="review-exit-btn" onclick="exitReview()">복습 종료</button>
+  <div class="review-banner" id="i-review-banner">
+    <span id="i-review-status">📕 오답 복습 모드</span>
+    <button class="review-exit-btn" onclick="iExitReview()">복습 종료</button>
   </div>
 
   <div class="qcard">
-    <div class="qbadge d" id="q-badge">온음계적 음정</div>
-
-    <div class="notes-wrap" id="notes-wrap">
+    <div class="qbadge d" id="i-q-badge">온음계적 음정</div>
+    <div class="notes-wrap" id="i-notes-wrap">
       <div class="note-item">—</div>
       <div class="arrow">→</div>
       <div class="note-item">—</div>
     </div>
-
     <div class="ans-row">
-      <select id="q-sel">
+      <select id="i-q-sel">
         <option value="">— 성질 —</option>
         <option value="완전">완전</option>
         <option value="장">장</option>
@@ -422,7 +480,7 @@
         <option value="증">증</option>
         <option value="감">감</option>
       </select>
-      <select id="d-sel">
+      <select id="i-d-sel">
         <option value="">— 도수 —</option>
         <option value="1">1도</option><option value="2">2도</option>
         <option value="3">3도</option><option value="4">4도</option>
@@ -432,137 +490,282 @@
         <option value="11">11도</option><option value="12">12도</option>
         <option value="13">13도</option><option value="14">14도</option>
       </select>
-      <button id="check-btn" onclick="checkAns()">확인 ✓</button>
+      <button id="i-check-btn" onclick="iCheckAns()">확인 ✓</button>
     </div>
-
-    <div id="feedback" class="feedback" style="display:none"></div>
-
-    <!-- 건반 해설 -->
-    <div id="keyboard-wrap">
+    <div id="i-feedback" class="feedback" style="display:none"></div>
+    <div class="keyboard-wrap" id="i-keyboard-wrap">
       <div class="kb-title">🎹 건반 해설</div>
-      <div class="kb-scroll" id="kb-svg-container"></div>
-      <div class="kb-legend" id="kb-legend"></div>
+      <div class="kb-scroll" id="i-kb-svg-container"></div>
+      <div class="kb-legend" id="i-kb-legend"></div>
     </div>
-
-    <button class="next-btn" id="next-btn" style="display:none" onclick="nextQ()">다음 문제 →</button>
+    <button class="next-btn" id="i-next-btn" style="display:none" onclick="iNextQ()">다음 문제 →</button>
   </div>
 
   <details>
     <summary>음정 참고표</summary>
-    <div class="ref-grid">
-      <div class="ref-col d">
-        <h4>온음계</h4>
-        <table>
-          <tr><td>0반음 / 1도</td><td>완전1도</td></tr>
-          <tr><td>1반음 / 2도</td><td>단2도</td></tr>
-          <tr><td>2반음 / 2도</td><td>장2도</td></tr>
-          <tr><td>3반음 / 3도</td><td>단3도</td></tr>
-          <tr><td>4반음 / 3도</td><td>장3도</td></tr>
-          <tr><td>5반음 / 4도</td><td>완전4도</td></tr>
-          <tr><td>6반음 / 4도</td><td>증4도</td></tr>
-          <tr><td>6반음 / 5도</td><td>감5도</td></tr>
-          <tr><td>7반음 / 5도</td><td>완전5도</td></tr>
-          <tr><td>8반음 / 6도</td><td>단6도</td></tr>
-          <tr><td>9반음 / 6도</td><td>장6도</td></tr>
-          <tr><td>10반음 / 7도</td><td>단7도</td></tr>
-          <tr><td>11반음 / 7도</td><td>장7도</td></tr>
-          <tr><td>12반음 / 8도</td><td>완전8도</td></tr>
-        </table>
-      </div>
-      <div class="ref-col c">
-        <h4>반음계</h4>
-        <table>
-          <tr><td>1반음 / 1도</td><td>증1도</td></tr>
-          <tr><td>0반음 / 2도</td><td>감2도</td></tr>
-          <tr><td>3반음 / 2도</td><td>증2도</td></tr>
-          <tr><td>2반음 / 3도</td><td>감3도</td></tr>
-          <tr><td>5반음 / 3도</td><td>증3도</td></tr>
-          <tr><td>4반음 / 4도</td><td>감4도</td></tr>
-          <tr><td>8반음 / 5도</td><td>증5도</td></tr>
-          <tr><td>7반음 / 6도</td><td>감6도</td></tr>
-          <tr><td>10반음 / 6도</td><td>증6도</td></tr>
-          <tr><td>9반음 / 7도</td><td>감7도</td></tr>
-          <tr><td>12반음 / 7도</td><td>증7도</td></tr>
-          <tr><td>11반음 / 8도</td><td>감8도</td></tr>
-        </table>
-      </div>
-      <div class="ref-col g">
-        <h4>겹음정 (+1옥타브)</h4>
-        <table>
-          <tr><td>13반음 / 9도</td><td>단9도</td></tr>
-          <tr><td>14반음 / 9도</td><td>장9도</td></tr>
-          <tr><td>15반음 / 10도</td><td>단10도</td></tr>
-          <tr><td>16반음 / 10도</td><td>장10도</td></tr>
-          <tr><td>17반음 / 11도</td><td>완전11도</td></tr>
-          <tr><td>18반음 / 11도</td><td>증11도</td></tr>
-          <tr><td>19반음 / 12도</td><td>완전12도</td></tr>
-          <tr><td>20반음 / 13도</td><td>단13도</td></tr>
-          <tr><td>21반음 / 13도</td><td>장13도</td></tr>
-          <tr><td>22반음 / 14도</td><td>단14도</td></tr>
-          <tr><td>23반음 / 14도</td><td>장14도</td></tr>
-        </table>
-      </div>
+    <div class="ref-grid cols3">
+      <div class="ref-col d"><h4>온음계</h4><table>
+        <tr><td>0반음 / 1도</td><td>완전1도</td></tr>
+        <tr><td>1반음 / 2도</td><td>단2도</td></tr>
+        <tr><td>2반음 / 2도</td><td>장2도</td></tr>
+        <tr><td>3반음 / 3도</td><td>단3도</td></tr>
+        <tr><td>4반음 / 3도</td><td>장3도</td></tr>
+        <tr><td>5반음 / 4도</td><td>완전4도</td></tr>
+        <tr><td>6반음 / 4도</td><td>증4도</td></tr>
+        <tr><td>6반음 / 5도</td><td>감5도</td></tr>
+        <tr><td>7반음 / 5도</td><td>완전5도</td></tr>
+        <tr><td>8반음 / 6도</td><td>단6도</td></tr>
+        <tr><td>9반음 / 6도</td><td>장6도</td></tr>
+        <tr><td>10반음 / 7도</td><td>단7도</td></tr>
+        <tr><td>11반음 / 7도</td><td>장7도</td></tr>
+        <tr><td>12반음 / 8도</td><td>완전8도</td></tr>
+      </table></div>
+      <div class="ref-col c"><h4>반음계</h4><table>
+        <tr><td>1반음 / 1도</td><td>증1도</td></tr>
+        <tr><td>0반음 / 2도</td><td>감2도</td></tr>
+        <tr><td>3반음 / 2도</td><td>증2도</td></tr>
+        <tr><td>2반음 / 3도</td><td>감3도</td></tr>
+        <tr><td>5반음 / 3도</td><td>증3도</td></tr>
+        <tr><td>4반음 / 4도</td><td>감4도</td></tr>
+        <tr><td>8반음 / 5도</td><td>증5도</td></tr>
+        <tr><td>7반음 / 6도</td><td>감6도</td></tr>
+        <tr><td>10반음 / 6도</td><td>증6도</td></tr>
+        <tr><td>9반음 / 7도</td><td>감7도</td></tr>
+        <tr><td>12반음 / 7도</td><td>증7도</td></tr>
+        <tr><td>11반음 / 8도</td><td>감8도</td></tr>
+      </table></div>
+      <div class="ref-col g"><h4>겹음정 (+1옥타브)</h4><table>
+        <tr><td>13반음 / 9도</td><td>단9도</td></tr>
+        <tr><td>14반음 / 9도</td><td>장9도</td></tr>
+        <tr><td>15반음 / 10도</td><td>단10도</td></tr>
+        <tr><td>16반음 / 10도</td><td>장10도</td></tr>
+        <tr><td>17반음 / 11도</td><td>완전11도</td></tr>
+        <tr><td>18반음 / 11도</td><td>증11도</td></tr>
+        <tr><td>19반음 / 12도</td><td>완전12도</td></tr>
+        <tr><td>20반음 / 13도</td><td>단13도</td></tr>
+        <tr><td>21반음 / 13도</td><td>장13도</td></tr>
+        <tr><td>22반음 / 14도</td><td>단14도</td></tr>
+        <tr><td>23반음 / 14도</td><td>장14도</td></tr>
+      </table></div>
     </div>
   </details>
 
-  <!-- 오답 노트 섹션 -->
   <div class="wrong-section">
-    <div class="wrong-header" onclick="toggleWrong()">
+    <div class="wrong-header" onclick="iToggleWrong()">
       <div class="wrong-title">
-        <span class="h-arrow" id="w-arrow">▸</span>
-        📕 오답 노트
-        <span id="wrong-count-badge" class="wrong-count-badge" style="display:none"></span>
+        <span id="iw-arrow">▸</span> 📕 오답 노트
+        <span id="i-wrong-count-badge" class="wrong-count-badge" style="display:none"></span>
       </div>
-      <button class="history-clear" onclick="event.stopPropagation(); clearWrongNotes()">목록 삭제</button>
+      <button class="history-clear" onclick="event.stopPropagation(); iClearWrongNotes()">목록 삭제</button>
     </div>
-    <div class="wrong-body" id="wrong-body">
-      <div id="wrong-content"></div>
+    <div class="wrong-body" id="i-wrong-body">
+      <div id="i-wrong-content"></div>
     </div>
   </div>
 
-  <!-- 내 기록 섹션 -->
   <div class="history-section">
-    <div class="history-header" onclick="toggleHistory()">
+    <div class="history-header" onclick="iToggleHistory()">
       <div class="history-title">
-        <span class="h-arrow" id="h-arrow">▸</span>
-        📊 내 기록
-        <span id="history-count" style="font-size:11px;font-weight:400;"></span>
+        <span id="ih-arrow">▸</span> 📊 내 기록
+        <span id="i-history-count" style="font-size:11px;font-weight:400;"></span>
       </div>
-      <button class="history-clear" onclick="event.stopPropagation(); clearHistory()">기록 삭제</button>
+      <button class="history-clear" onclick="event.stopPropagation(); iClearHistory()">기록 삭제</button>
     </div>
-    <div class="history-body" id="history-body">
-      <div id="history-content"></div>
+    <div class="history-body" id="i-history-body">
+      <div id="i-history-content"></div>
     </div>
   </div>
 </div>
+</div><!-- /page-interval -->
+
+<!-- ═══════════════════════════════════════════
+     PAGE: 코드 퀴즈
+════════════════════════════════════════════ -->
+<div class="page" id="page-chord">
+<div class="container">
+  <h1>🎸 코드 퀴즈</h1>
+
+  <div class="filter-row">
+    <button class="fbt on-major" id="btn-major" onclick="cToggleType('major')">장화음</button>
+    <button class="fbt on-minor" id="btn-minor" onclick="cToggleType('minor')">단화음</button>
+    <button class="fbt on-dim"   id="btn-dim"   onclick="cToggleType('dim')">감화음</button>
+    <button class="fbt on-aug"   id="btn-aug"   onclick="cToggleType('aug')">증화음</button>
+    <button class="fbt on-sus4"  id="btn-sus4"  onclick="cToggleType('sus4')">sus4</button>
+  </div>
+
+  <div class="score-row">
+    <div class="metric"><div class="metric-label">맞힌 문제</div><div class="metric-val" id="c-cnt-ok">0</div></div>
+    <div class="metric"><div class="metric-label">틀린 문제</div><div class="metric-val" id="c-cnt-ng">0</div></div>
+    <div class="metric"><div class="metric-label">정답률</div><div class="metric-val" id="c-accuracy">—</div></div>
+    <div class="metric"><div class="metric-label">문제 번호</div><div class="metric-val" id="c-q-num">1</div></div>
+  </div>
+  <div class="prog-wrap"><div class="prog-bar chord" id="c-prog-bar" style="width:0%"></div></div>
+
+  <div class="review-banner" id="c-review-banner">
+    <span id="c-review-status">📕 오답 복습 모드</span>
+    <button class="review-exit-btn" onclick="cExitReview()">복습 종료</button>
+  </div>
+
+  <div class="qcard">
+    <div class="qbadge major" id="c-q-badge">장3화음</div>
+
+    <!-- 근음 + 코드종류 제시 -->
+    <div class="root-prompt">아래 코드의 구성음을 완성하세요</div>
+    <div class="root-note" id="c-root-display">—</div>
+
+    <!-- 근음 표시 -->
+    <div class="chord-root-row">
+      <div class="chord-root-pill" id="c-slot-root">—</div>
+    </div>
+
+    <!-- 드롭다운 선택 -->
+    <div class="chord-drop-row">
+      <div class="chord-drop-col">
+        <label class="drop-label" id="c-third-label">3도음</label>
+        <select id="c-sel-third" onchange="cPickDrop('third')" class="chord-select">
+          <option value="">— 선택 —</option>
+        </select>
+      </div>
+      <div class="chord-drop-sep">+</div>
+      <div class="chord-drop-col">
+        <label class="drop-label">5도음</label>
+        <select id="c-sel-fifth" onchange="cPickDrop('fifth')" class="chord-select">
+          <option value="">— 선택 —</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="c-structure-hint" class="structure-hint" style="display:none">
+      <span class="hint-pill root" id="c-hint-root"></span>
+      <span style="color:var(--text-2);font-size:12px;align-self:center">+</span>
+      <span class="hint-pill third" id="c-hint-third"></span>
+      <span style="color:var(--text-2);font-size:12px;align-self:center">+</span>
+      <span class="hint-pill fifth" id="c-hint-fifth"></span>
+    </div>
+
+    <div class="check-row" style="margin-top:.75rem">
+      <button id="c-reset-btn" onclick="cResetPick()">↺ 다시</button>
+      <button id="c-check-btn" onclick="cCheckAns()" disabled>확인 ✓</button>
+    </div>
+
+    <div id="c-feedback" class="feedback" style="display:none"></div>
+
+    <div class="keyboard-wrap" id="c-keyboard-wrap">
+      <div class="kb-title">🎹 건반 해설</div>
+      <div class="kb-scroll" id="c-kb-svg-container"></div>
+      <div class="kb-legend" id="c-kb-legend"></div>
+    </div>
+
+    <button class="next-btn" id="c-next-btn" style="display:none" onclick="cNextQ()">다음 문제 →</button>
+  </div>
+
+  <details>
+    <summary>3화음 구조 참고표</summary>
+    <div class="ref-grid cols5">
+      <div class="ref-col major"><h4>장3화음</h4><table>
+        <tr><td>근음</td><td>기준음</td></tr>
+        <tr><td>3도음</td><td>장3도 (4반음)</td></tr>
+        <tr><td>5도음</td><td>완전5도 (7반음)</td></tr>
+        <tr><td>예시</td><td>도–미–솔</td></tr>
+      </table></div>
+      <div class="ref-col minor"><h4>단3화음</h4><table>
+        <tr><td>근음</td><td>기준음</td></tr>
+        <tr><td>3도음</td><td>단3도 (3반음)</td></tr>
+        <tr><td>5도음</td><td>완전5도 (7반음)</td></tr>
+        <tr><td>예시</td><td>라–도–미</td></tr>
+      </table></div>
+      <div class="ref-col dim"><h4>감3화음</h4><table>
+        <tr><td>근음</td><td>기준음</td></tr>
+        <tr><td>3도음</td><td>단3도 (3반음)</td></tr>
+        <tr><td>5도음</td><td>감5도 (6반음)</td></tr>
+        <tr><td>예시</td><td>시–레–파</td></tr>
+      </table></div>
+      <div class="ref-col aug"><h4>증3화음</h4><table>
+        <tr><td>근음</td><td>기준음</td></tr>
+        <tr><td>3도음</td><td>장3도 (4반음)</td></tr>
+        <tr><td>5도음</td><td>증5도 (8반음)</td></tr>
+        <tr><td>예시</td><td>도–미–솔♯</td></tr>
+      </table></div>
+      <div class="ref-col sus4"><h4>sus4</h4><table>
+        <tr><td>근음</td><td>기준음</td></tr>
+        <tr><td>4도음</td><td>완전4도 (5반음)</td></tr>
+        <tr><td>5도음</td><td>완전5도 (7반음)</td></tr>
+        <tr><td>예시</td><td>도–파–솔</td></tr>
+      </table></div>
+    </div>
+  </details>
+
+  <div class="wrong-section">
+    <div class="wrong-header" onclick="cToggleWrong()">
+      <div class="wrong-title">
+        <span id="cw-arrow">▸</span> 📕 오답 노트
+        <span id="c-wrong-count-badge" class="wrong-count-badge" style="display:none"></span>
+      </div>
+      <button class="history-clear" onclick="event.stopPropagation(); cClearWrongNotes()">목록 삭제</button>
+    </div>
+    <div class="wrong-body" id="c-wrong-body">
+      <div id="c-wrong-content"></div>
+    </div>
+  </div>
+
+  <div class="history-section">
+    <div class="history-header" onclick="cToggleHistory()">
+      <div class="history-title">
+        <span id="ch-arrow">▸</span> 📊 내 기록
+        <span id="c-history-count" style="font-size:11px;font-weight:400;"></span>
+      </div>
+      <button class="history-clear" onclick="event.stopPropagation(); cClearHistory()">기록 삭제</button>
+    </div>
+    <div class="history-body" id="c-history-body">
+      <div id="c-history-content"></div>
+    </div>
+  </div>
+</div>
+</div><!-- /page-chord -->
 
 <script>
-const DEGS = ['도','레','미','파','솔','라','시'];
-const BASE = [0, 2, 4, 5, 7, 9, 11];
+/* ═══════════════════════════════════════════
+   TAB SWITCHING
+════════════════════════════════════════════ */
+function switchTab(tab) {
+  document.getElementById('page-interval').classList.toggle('active', tab === 'interval');
+  document.getElementById('page-chord').classList.toggle('active', tab === 'chord');
+  document.getElementById('tab-interval').className = 'nav-tab' + (tab === 'interval' ? ' active-interval' : '');
+  document.getElementById('tab-chord').className = 'nav-tab' + (tab === 'chord' ? ' active-chord' : '');
+}
 
-function nn(deg, acc) {
-  return DEGS[deg] + (acc === -1 ? '♭' : acc === 1 ? '♯' : '');
+/* ═══════════════════════════════════════════
+   공통 유틸
+════════════════════════════════════════════ */
+function formatDate(ts) {
+  const d = new Date(ts);
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
-function excluded(deg, acc) {
-  return (deg === 0 && acc === -1) || (deg === 2 && acc === 1) ||
-         (deg === 3 && acc === -1) || (deg === 6 && acc === 1);
-}
+
+/* ═══════════════════════════════════════════
+   ■ 음정 퀴즈 (INTERVAL)
+════════════════════════════════════════════ */
+const DEGS = ['도','레','미','파','솔','라','시'];
+const BASE = [0,2,4,5,7,9,11];
+function nn(deg,acc){ return DEGS[deg]+(acc===-1?'♭':acc===1?'♯':''); }
+function excluded(deg,acc){ return (deg===0&&acc===-1)||(deg===2&&acc===1)||(deg===3&&acc===-1)||(deg===6&&acc===1); }
 
 const IVLS = {
-  d: [
+  d:[
     {n:'완전1도',g:1,s:0},{n:'단2도',g:2,s:1},{n:'장2도',g:2,s:2},
     {n:'단3도',g:3,s:3},{n:'장3도',g:3,s:4},{n:'완전4도',g:4,s:5},
     {n:'증4도',g:4,s:6},{n:'감5도',g:5,s:6},{n:'완전5도',g:5,s:7},
     {n:'단6도',g:6,s:8},{n:'장6도',g:6,s:9},{n:'단7도',g:7,s:10},
     {n:'장7도',g:7,s:11},{n:'완전8도',g:8,s:12}
   ],
-  c: [
+  c:[
     {n:'증1도',g:1,s:1},{n:'감2도',g:2,s:0},{n:'증2도',g:2,s:3},
     {n:'감3도',g:3,s:2},{n:'증3도',g:3,s:5},{n:'감4도',g:4,s:4},
     {n:'증5도',g:5,s:8},{n:'감6도',g:6,s:7},{n:'증6도',g:6,s:10},
     {n:'감7도',g:7,s:9},{n:'증7도',g:7,s:12},{n:'감8도',g:8,s:11}
   ],
-  g: [
+  g:[
     {n:'단9도',g:9,s:13},{n:'장9도',g:9,s:14},
     {n:'단10도',g:10,s:15},{n:'장10도',g:10,s:16},
     {n:'완전11도',g:11,s:17},{n:'증11도',g:11,s:18},
@@ -571,672 +774,605 @@ const IVLS = {
     {n:'단14도',g:14,s:22},{n:'장14도',g:14,s:23}
   ]
 };
+Object.entries(IVLS).forEach(([cat,list])=>list.forEach(iv=>iv.cat=cat));
+const ALL_NAMES = new Set(Object.values(IVLS).flat().map(i=>i.n));
+const CAT_LABELS = {d:'온음계적 음정',c:'반음계적 음정',g:'겹음정'};
 
-Object.entries(IVLS).forEach(([cat, list]) => list.forEach(iv => iv.cat = cat));
-const ALL_NAMES = new Set(Object.values(IVLS).flat().map(i => i.n));
-const CAT_LABELS = { d:'온음계적 음정', c:'반음계적 음정', g:'겹음정' };
+const iEnabled = {d:true,c:true,g:true};
+let iCurQ=null, iAnswered=false, iNok=0, iNng=0, iQnum=0;
+let iReviewMode=false, iReviewQueue=[], iReviewIdx=0;
 
-const enabled = { d: true, c: true, g: true };
-let curQ = null, answered = false, nOk = 0, nNg = 0, qNum = 0;
-
-function pool() {
-  return Object.entries(enabled).filter(([,v]) => v).flatMap(([k]) => IVLS[k]);
+function iPool(){ return Object.entries(iEnabled).filter(([,v])=>v).flatMap(([k])=>IVLS[k]); }
+function iToggleCat(cat){
+  if(iEnabled[cat]&&Object.values(iEnabled).filter(Boolean).length===1)return;
+  iEnabled[cat]=!iEnabled[cat];
+  document.getElementById('btn-'+cat).className='fbt'+(iEnabled[cat]?' on-'+cat:'');
 }
 
-function toggleCat(cat) {
-  if (enabled[cat] && Object.values(enabled).filter(Boolean).length === 1) return;
-  enabled[cat] = !enabled[cat];
-  const btn = document.getElementById('btn-' + cat);
-  btn.className = 'fbt' + (enabled[cat] ? ' on-' + cat : '');
-}
-
-function genQ() {
-  const p = pool();
-  if (!p.length) return null;
-  const ACC_POOL = [-1, 0, 0, 0, 1];
-  for (let i = 0; i < 400; i++) {
-    const iv = p[Math.floor(Math.random() * p.length)];
-    const bd = Math.floor(Math.random() * 7);
-    const ba = ACC_POOL[Math.floor(Math.random() * ACC_POOL.length)];
-    if (excluded(bd, ba)) continue;
-    const bst = BASE[bd] + ba;
-    const off = iv.g - 1;
-    const td  = (bd + off) % 7;
-    const oc  = Math.floor((bd + off) / 7);
-    if (iv.g >= 9 && oc !== 1) continue;
-    const ets   = bst + iv.s;
-    const tbase = BASE[td] + oc * 12;
-    const ta    = ets - tbase;
-    if (ta < -1 || ta > 1) continue;
-    if (excluded(td, ta)) continue;
-    return { bot: {d:bd, a:ba}, top: {d:td, a:ta, oc}, iv };
+function iGenQ(){
+  const p=iPool(); if(!p.length)return null;
+  const ACC_POOL=[-1,0,0,0,1];
+  for(let i=0;i<400;i++){
+    const iv=p[Math.floor(Math.random()*p.length)];
+    const bd=Math.floor(Math.random()*7);
+    const ba=ACC_POOL[Math.floor(Math.random()*ACC_POOL.length)];
+    if(excluded(bd,ba))continue;
+    const bst=BASE[bd]+ba;
+    const off=iv.g-1;
+    const td=(bd+off)%7;
+    const oc=Math.floor((bd+off)/7);
+    if(iv.g>=9&&oc!==1)continue;
+    const ets=bst+iv.s;
+    const tbase=BASE[td]+oc*12;
+    const ta=ets-tbase;
+    if(ta<-1||ta>1)continue;
+    if(excluded(td,ta))continue;
+    return {bot:{d:bd,a:ba},top:{d:td,a:ta,oc},iv};
   }
   return null;
 }
 
-function noteHTML(deg, acc, octNum) {
-  return `<div class="note-item">${nn(deg,acc)}<sup>${octNum}</sup></div>`;
+function iNoteHTML(deg,acc,octNum){ return `<div class="note-item">${nn(deg,acc)}<sup>${octNum}</sup></div>`; }
+
+function iRenderQ(){
+  iAnswered=false;
+  const q=iGenQ(); if(!q)return;
+  iCurQ=q; iQnum++;
+  document.getElementById('i-q-num').textContent=iQnum;
+  const badge=document.getElementById('i-q-badge');
+  badge.className='qbadge '+q.iv.cat;
+  badge.textContent=CAT_LABELS[q.iv.cat];
+  const botOct=1, topOct=1+q.top.oc;
+  document.getElementById('i-notes-wrap').innerHTML=
+    iNoteHTML(q.bot.d,q.bot.a,botOct)+'<div class="arrow">→</div>'+iNoteHTML(q.top.d,q.top.a,topOct);
+  document.getElementById('i-q-sel').value='';
+  document.getElementById('i-d-sel').value='';
+  document.getElementById('i-feedback').style.display='none';
+  document.getElementById('i-keyboard-wrap').style.display='none';
+  document.getElementById('i-next-btn').style.display='none';
+  document.getElementById('i-check-btn').disabled=false;
+  document.getElementById('i-prog-bar').style.width=Math.min((iQnum-1)/20*100,100)+'%';
 }
 
-function renderQ() {
-  answered = false;
-  const q = genQ();
-  if (!q) return;
-  curQ = q;
-  qNum++;
-
-  document.getElementById('q-num').textContent = qNum;
-  const badge = document.getElementById('q-badge');
-  badge.className = 'qbadge ' + q.iv.cat;
-  badge.textContent = CAT_LABELS[q.iv.cat];
-
-  const botOct = 1;
-  const topOct = 1 + q.top.oc;
-  document.getElementById('notes-wrap').innerHTML =
-    noteHTML(q.bot.d, q.bot.a, botOct) +
-    '<div class="arrow">→</div>' +
-    noteHTML(q.top.d, q.top.a, topOct);
-
-  document.getElementById('q-sel').value = '';
-  document.getElementById('d-sel').value = '';
-  document.getElementById('feedback').style.display = 'none';
-  document.getElementById('keyboard-wrap').style.display = 'none';
-  document.getElementById('next-btn').style.display = 'none';
-  document.getElementById('check-btn').disabled = false;
-  document.getElementById('prog-bar').style.width = Math.min((qNum-1)/20*100,100)+'%';
-}
-
-function checkAns() {
-  if (answered) return;
-  const qs = document.getElementById('q-sel').value;
-  const ds = document.getElementById('d-sel').value;
-  const fb = document.getElementById('feedback');
-  if (!qs || !ds) {
-    fb.className = 'feedback wr';
-    fb.textContent = '성질과 도수를 모두 선택해 주세요.';
-    fb.style.display = 'block'; return;
+function iCheckAns(){
+  if(iAnswered)return;
+  const qs=document.getElementById('i-q-sel').value;
+  const ds=document.getElementById('i-d-sel').value;
+  const fb=document.getElementById('i-feedback');
+  if(!qs||!ds){fb.className='feedback wr';fb.textContent='성질과 도수를 모두 선택해 주세요.';fb.style.display='block';return;}
+  iAnswered=true;
+  document.getElementById('i-check-btn').disabled=true;
+  const attempt=qs+ds+'도';
+  const correct=iCurQ.iv.n;
+  const isRight=attempt===correct;
+  if(isRight)iNok++;else iNng++;
+  document.getElementById('i-cnt-ok').textContent=iNok;
+  document.getElementById('i-cnt-ng').textContent=iNng;
+  document.getElementById('i-accuracy').textContent=Math.round(iNok/(iNok+iNng)*100)+'%';
+  if(iNok+iNng>=5)iSaveSession();
+  const {g,s,n}=iCurQ.iv;
+  const semisExpl=g>=9?`반음 ${s}개 (단순 ${s-12}반음 + 1옥타브)`:`반음 ${s}개`;
+  fb.style.display='block';
+  if(iReviewMode){
+    if(isRight)iRemoveWrong(iCurQ.key);
+    else{const wl=iGetWrong();const wi=wl.find(w=>w.key===iCurQ.key);if(wi){wi.wrongCount++;wi.lastWrong=formatDate(Date.now());iSaveWrong(wl);}}
+    iReviewIdx++;
   }
-  answered = true;
-  document.getElementById('check-btn').disabled = true;
-
-  const attempt = qs + ds + '도';
-  const correct = curQ.iv.n;
-  const isRight = attempt === correct;
-  if (isRight) nOk++; else nNg++;
-  document.getElementById('cnt-ok').textContent = nOk;
-  document.getElementById('cnt-ng').textContent = nNg;
-  document.getElementById('accuracy').textContent = Math.round(nOk/(nOk+nNg)*100)+'%';
-
-  // 5문제 이상이면 자동 임시 저장
-  if (nOk + nNg >= 5) saveCurrentSession();
-
-  const { g, s, n } = curQ.iv;
-  const semisExpl = g >= 9
-    ? `반음 ${s}개 (단순 ${s-12}반음 + 1옥타브)`
-    : `반음 ${s}개`;
-
-  fb.style.display = 'block';
-
-  // 복습 모드: 정답이면 오답 노트에서 제거, 오답이면 유지
-  if (reviewMode) {
-    if (isRight) {
-      removeFromWrongNotes(curQ.key);
-    } else {
-      // 오답 노트에서 wrongCount 증가
-      const wl = getWrongNotes();
-      const witem = wl.find(w => w.key === curQ.key);
-      if (witem) { witem.wrongCount++; witem.lastWrong = formatDate(Date.now()); saveWrongNotes(wl); }
-    }
-    reviewIdx++;
-  }
-
-  if (!ALL_NAMES.has(attempt)) {
-    fb.className = 'feedback wr';
-    fb.innerHTML = `⚠ <b>${attempt}</b>은(는) 존재하지 않는 음정입니다.<br>정답: <b>${n}</b> — 도수 ${g}도, ${semisExpl}`;
-  } else if (isRight) {
-    fb.className = 'feedback ok';
-    fb.innerHTML = `✓ 정답! <b>${n}</b> — 도수 ${g}도, ${semisExpl}`;
+  if(!ALL_NAMES.has(attempt)){
+    fb.className='feedback wr';
+    fb.innerHTML=`⚠ <b>${attempt}</b>은(는) 존재하지 않는 음정입니다.<br>정답: <b>${n}</b> — 도수 ${g}도, ${semisExpl}`;
+  } else if(isRight){
+    fb.className='feedback ok';
+    fb.innerHTML=`✓ 정답! <b>${n}</b> — 도수 ${g}도, ${semisExpl}`;
   } else {
-    fb.className = 'feedback ng';
-    fb.innerHTML = `✗ 오답. 정답: <b>${n}</b> — 도수 ${g}도, ${semisExpl}<br><span class="saved-toast show">📕 오답 노트에 저장됨</span>`;
-    if (!reviewMode) addToWrongNotes(curQ);
+    fb.className='feedback ng';
+    fb.innerHTML=`✗ 오답. 정답: <b>${n}</b> — 도수 ${g}도, ${semisExpl}<br><span style="font-size:11px;color:var(--ng-text)">📕 오답 노트에 저장됨</span>`;
+    if(!iReviewMode)iAddWrong(iCurQ);
   }
-
-  // 건반 해설 렌더링
-  const botSemi = BASE[curQ.bot.d] + curQ.bot.a;
-  const topSemi = BASE[curQ.top.d] + curQ.top.a + curQ.top.oc * 12;
-  const botLabel = nn(curQ.bot.d, curQ.bot.a);
-  const topLabel = nn(curQ.top.d, curQ.top.a) + (curQ.top.oc ? '\u00b2' : '\u00b9');
-  const botLabelPlain = nn(curQ.bot.d, curQ.bot.a) + '\u00b9';
-
-  renderKeyboard(botSemi, topSemi, botLabelPlain, topLabel, n, s);
-
-  document.getElementById('next-btn').style.display = 'block';
+  const botSemi=BASE[iCurQ.bot.d]+iCurQ.bot.a;
+  const topSemi=BASE[iCurQ.top.d]+iCurQ.top.a+iCurQ.top.oc*12;
+  const botLabel=nn(iCurQ.bot.d,iCurQ.bot.a)+'\u00b9';
+  const topLabel=nn(iCurQ.top.d,iCurQ.top.a)+(iCurQ.top.oc?'\u00b2':'\u00b9');
+  iRenderKeyboard(botSemi,topSemi,botLabel,topLabel,n,s);
+  document.getElementById('i-next-btn').style.display='block';
 }
 
-/* ─────────────────────────────────────────
-   건반 해설 렌더러
-───────────────────────────────────────── */
-function renderKeyboard(botSemi, topSemi, botLabel, topLabel, ivName, semitones) {
-  const WW = 26;   // 흰 건반 너비
-  const WH = 72;   // 흰 건반 높이
-  const BW = 15;   // 검은 건반 너비
-  const BH = 45;   // 검은 건반 높이
-  const TOP_PAD = 28; // 브래킷 공간
-  const BOT_PAD = 20; // 음이름 레이블 공간
-  const WHITE_SET = new Set([0,2,4,5,7,9,11]);
+function iNextQ(){ if(iReviewMode)iRenderReviewQ();else iRenderQ(); }
 
-  // 표시 범위: 아래음 옥타브의 C ~ 위음 옥타브의 B+1
-  const botOct = Math.floor(botSemi / 12);
-  const topOct = Math.floor(topSemi / 12);
-  const startSemi = botOct * 12;
-  const endSemi   = topOct * 12 + 12; // 위음 옥타브 끝(다음 C 포함)
-
-  // 건반 목록
-  const keys = [];
-  for (let s = startSemi; s <= endSemi; s++) {
-    keys.push({ s, c: s % 12, isWhite: WHITE_SET.has(s % 12) });
+/* 건반 해설 */
+function iRenderKeyboard(botSemi,topSemi,botLabel,topLabel,ivName,semitones){
+  const WW=26,WH=72,BW=15,BH=45,TOP_PAD=28,BOT_PAD=20;
+  const WHITE_SET=new Set([0,2,4,5,7,9,11]);
+  const botOct=Math.floor(botSemi/12),topOct=Math.floor(topSemi/12);
+  const startSemi=botOct*12,endSemi=topOct*12+12;
+  const keys=[];
+  for(let s=startSemi;s<=endSemi;s++)keys.push({s,c:s%12,isWhite:WHITE_SET.has(s%12)});
+  let wx=4; const pos={};
+  keys.forEach(k=>{if(k.isWhite){pos[k.s]=wx;wx+=WW;}});
+  keys.forEach(k=>{if(!k.isWhite&&pos[k.s-1]!==undefined)pos[k.s]=pos[k.s-1]+WW-BW/2;});
+  const svgW=wx+4,svgH=TOP_PAD+WH+BOT_PAD,KY=TOP_PAD;
+  const parts=[];
+  if(botSemi!==topSemi){
+    const bx=pos[botSemi]!==undefined?pos[botSemi]+(WHITE_SET.has(botSemi%12)?0:-1):null;
+    const tx=pos[topSemi]!==undefined?pos[topSemi]+(WHITE_SET.has(topSemi%12)?WW-1:BW):null;
+    if(bx!==null&&tx!==null)parts.push(`<rect x="${bx}" y="${KY}" width="${tx-bx}" height="${WH}" fill="rgba(99,102,241,0.06)"/>`);
   }
-
-  // 흰 건반 x 좌표
-  let wx = 4;
-  const pos = {};
-  keys.forEach(k => {
-    if (k.isWhite) { pos[k.s] = wx; wx += WW; }
+  keys.filter(k=>k.isWhite).forEach(k=>{
+    const x=pos[k.s]; const isB=k.s===botSemi,isT=k.s===topSemi,isBoth=isB&&isT;
+    let fill='#fff';
+    if(isBoth)fill='#a78bfa';else if(isB)fill='#6ee7b7';else if(isT)fill='#93c5fd';
+    parts.push(`<rect x="${x}" y="${KY}" width="${WW-1}" height="${WH}" rx="3" fill="${fill}" stroke="#ccc" stroke-width="1"/>`);
   });
-  // 검은 건반 x 좌표
-  keys.forEach(k => {
-    if (!k.isWhite && pos[k.s - 1] !== undefined) {
-      pos[k.s] = pos[k.s - 1] + WW - BW / 2;
-    }
-  });
-
-  const svgW = wx + 4;
-  const svgH = TOP_PAD + WH + BOT_PAD;
-  const KY = TOP_PAD; // 건반 시작 y
-
-  const parts = [];
-
-  // 범위 배경 (아래음~위음 사이 반음 영역 표시)
-  if (botSemi !== topSemi) {
-    const bx = pos[botSemi] !== undefined
-      ? pos[botSemi] + (WHITE_SET.has(botSemi % 12) ? 0 : -1)
-      : null;
-    const tx = pos[topSemi] !== undefined
-      ? pos[topSemi] + (WHITE_SET.has(topSemi % 12) ? WW - 1 : BW)
-      : null;
-    if (bx !== null && tx !== null) {
-      parts.push(`<rect x="${bx}" y="${KY}" width="${tx - bx}" height="${WH}" rx="0" fill="rgba(99,102,241,0.06)" />`);
-    }
-  }
-
-  // 흰 건반
-  keys.filter(k => k.isWhite).forEach(k => {
-    const x = pos[k.s];
-    const isB = k.s === botSemi, isT = k.s === topSemi;
-    const isBoth = isB && isT;
-    let fill = '#fff';
-    if (isBoth) fill = '#a78bfa';
-    else if (isB) fill = '#6ee7b7';
-    else if (isT) fill = '#93c5fd';
-    parts.push(`<rect x="${x}" y="${KY}" width="${WW - 1}" height="${WH}" rx="3" fill="${fill}" stroke="#ccc" stroke-width="1"/>`);
-  });
-
-  // 검은 건반
-  keys.filter(k => !k.isWhite).forEach(k => {
-    const x = pos[k.s];
-    if (x === undefined) return;
-    const isB = k.s === botSemi, isT = k.s === topSemi;
-    const isBoth = isB && isT;
-    let fill = '#1e1e1e';
-    if (isBoth) fill = '#7c3aed';
-    else if (isB) fill = '#059669';
-    else if (isT) fill = '#2563eb';
+  keys.filter(k=>!k.isWhite).forEach(k=>{
+    const x=pos[k.s]; if(x===undefined)return;
+    const isB=k.s===botSemi,isT=k.s===topSemi,isBoth=isB&&isT;
+    let fill='#1e1e1e';
+    if(isBoth)fill='#7c3aed';else if(isB)fill='#059669';else if(isT)fill='#2563eb';
     parts.push(`<rect x="${x}" y="${KY}" width="${BW}" height="${BH}" rx="2" fill="${fill}"/>`);
   });
-
-  // 브래킷 (위음과 아래음 사이)
-  const getCx = s => {
-    if (pos[s] === undefined) return null;
-    return pos[s] + (WHITE_SET.has(s % 12) ? WW / 2 : BW / 2);
-  };
-  const bCx = getCx(botSemi);
-  const tCx = getCx(topSemi);
-
-  if (bCx !== null && tCx !== null) {
-    const bracketY = KY - 7;
-    const tickH = 6;
-    if (botSemi === topSemi) {
-      // 유니즌: 단순 세로선
-      parts.push(`<line x1="${bCx}" y1="${KY}" x2="${bCx}" y2="${bracketY - 2}" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>`);
+  const getCx=s=>pos[s]!==undefined?pos[s]+(WHITE_SET.has(s%12)?WW/2:BW/2):null;
+  const bCx=getCx(botSemi),tCx=getCx(topSemi);
+  if(bCx!==null&&tCx!==null){
+    const bracketY=KY-7;
+    if(botSemi===topSemi){
+      parts.push(`<line x1="${bCx}" y1="${KY}" x2="${bCx}" y2="${bracketY-2}" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>`);
     } else {
-      // ㄷ 형 브래킷
       parts.push(`<line x1="${bCx}" y1="${KY}" x2="${bCx}" y2="${bracketY}" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>`);
       parts.push(`<line x1="${tCx}" y1="${KY}" x2="${tCx}" y2="${bracketY}" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>`);
       parts.push(`<line x1="${bCx}" y1="${bracketY}" x2="${tCx}" y2="${bracketY}" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>`);
     }
-    // 음정 이름 레이블
-    const midX = (bCx + tCx) / 2;
-    const labelY = bracketY - 5;
-    // 배경 pill
-    const lblW = ivName.length * 8 + 14;
-    parts.push(`<rect x="${midX - lblW/2}" y="${labelY - 12}" width="${lblW}" height="14" rx="7" fill="#6366f1"/>`);
-    parts.push(`<text x="${midX}" y="${labelY - 2}" text-anchor="middle" font-size="10" font-family="'Noto Sans KR',sans-serif" fill="#fff" font-weight="700">${ivName}</text>`);
+    const midX=(bCx+tCx)/2,labelY=bracketY-5;
+    const lblW=ivName.length*8+14;
+    parts.push(`<rect x="${midX-lblW/2}" y="${labelY-12}" width="${lblW}" height="14" rx="7" fill="#6366f1"/>`);
+    parts.push(`<text x="${midX}" y="${labelY-2}" text-anchor="middle" font-size="10" font-family="'Noto Sans KR',sans-serif" fill="#fff" font-weight="700">${ivName}</text>`);
   }
-
-  // 음이름 레이블 (건반 아래)
-  [[botSemi, botLabel, '#065f46'], [topSemi, topLabel, '#1e3a8a']].forEach(([s, lbl, color]) => {
-    if (pos[s] === undefined) return;
-    const isW = WHITE_SET.has(s % 12);
-    const cx = pos[s] + (isW ? WW / 2 - 0.5 : BW / 2);
-    // 검은 건반은 흰 건반 위에 있어서 레이블이 겹칠 수 있음 → 흰 건반 아래쪽에만 표시
-    // 검은 건반이면 살짝 오른쪽으로 밀기
-    const lx = isW ? cx : cx + 3;
-    parts.push(`<text x="${lx}" y="${KY + WH + 14}" text-anchor="middle" font-size="11" font-family="'Noto Sans KR',sans-serif" fill="${color}" font-weight="700">${lbl}</text>`);
+  [[botSemi,botLabel,'#065f46'],[topSemi,topLabel,'#1e3a8a']].forEach(([s,lbl,color])=>{
+    if(pos[s]===undefined)return;
+    const isW=WHITE_SET.has(s%12);
+    const cx=pos[s]+(isW?WW/2-0.5:BW/2);
+    const lx=isW?cx:cx+3;
+    parts.push(`<text x="${lx}" y="${KY+WH+14}" text-anchor="middle" font-size="11" font-family="'Noto Sans KR',sans-serif" fill="${color}" font-weight="700">${lbl}</text>`);
   });
-
-  // 반음 수 카운터 (건반 사이 반음들에 점)
-  if (botSemi !== topSemi) {
-    // 반음 사이 건반에 작은 번호 표시 (선택적: 너무 복잡하면 생략)
-    // 대신 아래 레전드로 표시
-  }
-
-  const svg = `<svg width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg" style="display:block;min-width:${svgW}px">${parts.join('')}</svg>`;
-
-  document.getElementById('kb-svg-container').innerHTML = svg;
-
-  // 레전드
-  const sameNote = botSemi === topSemi;
-  let legendHTML = '';
-  if (sameNote) {
-    legendHTML = `<div class="kb-legend-item"><div class="kb-legend-dot" style="background:#7c3aed"></div><span>${botLabel} (동일음)</span></div>`;
-  } else {
-    legendHTML = `
-      <div class="kb-legend-item"><div class="kb-legend-dot" style="background:#059669"></div><span>아래음 ${botLabel}</span></div>
-      <div class="kb-legend-item"><div class="kb-legend-dot" style="background:#2563eb"></div><span>위음 ${topLabel}</span></div>
-      <div class="kb-legend-item" style="color:var(--text)"><span>반음 간격: <b>${semitones}개</b></span></div>
-    `;
-  }
-  document.getElementById('kb-legend').innerHTML = legendHTML;
-  document.getElementById('keyboard-wrap').style.display = 'block';
+  const svg=`<svg width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg" style="display:block;min-width:${svgW}px">${parts.join('')}</svg>`;
+  document.getElementById('i-kb-svg-container').innerHTML=svg;
+  const sameNote=botSemi===topSemi;
+  let legendHTML='';
+  if(sameNote){legendHTML=`<div class="kb-legend-item"><div class="kb-legend-dot" style="background:#7c3aed"></div><span>${botLabel} (동일음)</span></div>`;}
+  else{legendHTML=`<div class="kb-legend-item"><div class="kb-legend-dot" style="background:#059669"></div><span>아래음 ${botLabel}</span></div><div class="kb-legend-item"><div class="kb-legend-dot" style="background:#2563eb"></div><span>위음 ${topLabel}</span></div><div class="kb-legend-item"><span>반음 간격: <b>${semitones}개</b></span></div>`;}
+  document.getElementById('i-kb-legend').innerHTML=legendHTML;
+  document.getElementById('i-keyboard-wrap').style.display='block';
 }
 
-function nextQ() { if (reviewMode) renderReviewQ(); else renderQ(); }
-
-/* ─────────────────────────────────────────
-   점수 기록 시스템 (localStorage)
-───────────────────────────────────────── */
-const HISTORY_KEY = 'interval_quiz_history';
-const SESSION_KEY = 'interval_quiz_session';
-let sessionStart = Date.now();
-
-function getHistory() {
-  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
-  catch { return []; }
+/* 음정 오답 노트 */
+const I_WRONG_KEY='interval_quiz_wrong';
+function iQKey(q){return `${q.bot.d}_${q.bot.a}__${q.top.d}_${q.top.a}_${q.top.oc}`;}
+function iGetWrong(){try{return JSON.parse(localStorage.getItem(I_WRONG_KEY)||'[]');}catch{return[];}}
+function iSaveWrong(list){try{localStorage.setItem(I_WRONG_KEY,JSON.stringify(list));}catch{}iUpdateWrongBadge();}
+function iUpdateWrongBadge(){const list=iGetWrong();const b=document.getElementById('i-wrong-count-badge');if(list.length>0){b.textContent=list.length+'개';b.style.display='';}else b.style.display='none';}
+function iAddWrong(q){
+  const list=iGetWrong();const key=iQKey(q);const ex=list.find(w=>w.key===key);
+  if(ex){ex.wrongCount=(ex.wrongCount||1)+1;ex.lastWrong=formatDate(Date.now());}
+  else list.unshift({key,bot:q.bot,top:q.top,ivName:q.iv.n,ivCat:q.iv.cat,wrongCount:1,lastWrong:formatDate(Date.now())});
+  if(list.length>100)list.splice(100);iSaveWrong(list);
 }
-
-function saveCurrentSession() {
-  if (nOk + nNg === 0) return;
-  const cats = Object.entries(enabled).filter(([,v]) => v).map(([k]) => k);
-  const session = {
-    id: sessionStart,
-    date: formatDate(sessionStart),
-    correct: nOk,
-    wrong: nNg,
-    total: nOk + nNg,
-    accuracy: Math.round(nOk / (nOk + nNg) * 100),
-    cats
-  };
-  // 현재 세션을 임시 저장
-  try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch {}
-}
-
-function finalizeSession() {
-  if (nOk + nNg < 1) return;
-  const raw = localStorage.getItem(SESSION_KEY);
-  if (!raw) return;
-  try {
-    const session = JSON.parse(raw);
-    const history = getHistory();
-    // 같은 sessionStart id가 이미 있으면 업데이트, 없으면 추가
-    const idx = history.findIndex(h => h.id === session.id);
-    if (idx >= 0) history[idx] = session;
-    else history.unshift(session);
-    // 최대 50개 유지
-    if (history.length > 50) history.splice(50);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-    localStorage.removeItem(SESSION_KEY);
-    renderHistory();
-  } catch {}
-}
-
-function formatDate(ts) {
-  const d = new Date(ts);
-  const pad = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function clearHistory() {
-  if (!confirm('기록을 모두 삭제할까요?')) return;
-  localStorage.removeItem(HISTORY_KEY);
-  localStorage.removeItem(SESSION_KEY);
-  renderHistory();
-}
-
-function toggleHistory() {
-  const body = document.getElementById('history-body');
-  const arrow = document.getElementById('h-arrow');
-  const isOpen = body.classList.toggle('open');
-  arrow.textContent = isOpen ? '▾' : '▸';
-  arrow.classList.toggle('open', isOpen);
-  if (isOpen) renderHistory();
-}
-
-const CAT_LABELS_SHORT = { d: '온음', c: '반음', g: '겹음' };
-
-function renderHistory() {
-  const history = getHistory();
-  const countEl = document.getElementById('history-count');
-  countEl.textContent = history.length > 0 ? `(${history.length}세션)` : '';
-
-  const container = document.getElementById('history-content');
-  if (history.length === 0) {
-    container.innerHTML = '<div class="history-empty">아직 저장된 기록이 없어요.<br>5문제 이상 풀면 자동으로 저장됩니다.</div>';
-    return;
-  }
-
-  // 베스트 정답률 찾기
-  const bestAcc = Math.max(...history.map(h => h.accuracy));
-
-  let rows = history.map((h, i) => {
-    const accClass = h.accuracy >= 80 ? 'high' : h.accuracy >= 50 ? 'mid' : 'low';
-    const isBest = h.accuracy === bestAcc && i === history.findIndex(x => x.accuracy === bestAcc);
-    const catDots = h.cats.map(c =>
-      `<span class="cat-dot ${c}">${CAT_LABELS_SHORT[c]}</span>`
-    ).join('');
-    return `<tr>
-      <td>${h.date}${isBest ? '<span class="best-badge">🏆 최고</span>' : ''}</td>
-      <td>${h.correct}</td>
-      <td>${h.wrong}</td>
-      <td><span class="acc-pill ${accClass}">${h.accuracy}%</span></td>
-      <td><div class="cat-dots">${catDots}</div></td>
-    </tr>`;
+function iRemoveWrong(key){let list=iGetWrong();list=list.filter(w=>w.key!==key);iSaveWrong(list);iRenderWrong();}
+function iClearWrongNotes(){if(!confirm('오답 목록을 모두 삭제할까요?'))return;localStorage.removeItem(I_WRONG_KEY);iUpdateWrongBadge();iRenderWrong();}
+function iToggleWrong(){const b=document.getElementById('i-wrong-body');const a=document.getElementById('iw-arrow');const o=b.classList.toggle('open');a.textContent=o?'▾':'▸';if(o)iRenderWrong();}
+function iRenderWrong(){
+  const list=iGetWrong();const c=document.getElementById('i-wrong-content');
+  if(list.length===0){c.innerHTML='<div class="wrong-empty">오답 목록이 비어있어요!</div>';return;}
+  const catLabel={d:'온음계',c:'반음계',g:'겹음정'};
+  const D=['도','레','미','파','솔','라','시'];
+  const NNN=(deg,acc)=>D[deg]+(acc===-1?'♭':acc===1?'♯':'');
+  const items=list.map(w=>{
+    const botStr=NNN(w.bot.d,w.bot.a)+'¹';
+    const topStr=NNN(w.top.d,w.top.a)+(w.top.oc?'²':'¹');
+    return `<div class="wrong-item"><div><div class="wrong-item-notes">${botStr} → ${topStr}</div><div class="wrong-item-meta"><span class="cat-dot ${w.ivCat}">${catLabel[w.ivCat]}</span>틀린 횟수: ${w.wrongCount}회 · ${w.lastWrong}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="wrong-item-ans">${w.ivName}</span><button class="wrong-del-btn" onclick="iRemoveWrong('${w.key}')">✕</button></div></div>`;
   }).join('');
-
-  container.innerHTML = `
-    <table class="history-table">
-      <thead>
-        <tr>
-          <th>날짜</th>
-          <th>정답</th>
-          <th>오답</th>
-          <th>정답률</th>
-          <th>유형</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+  c.innerHTML=`<button class="review-start-btn" onclick="iStartReview()">📕 오답 복습 시작 (${list.length}문제)</button><div class="wrong-list">${items}</div>`;
 }
 
-
-/* ─────────────────────────────────────────
-   오답 노트 시스템
-───────────────────────────────────────── */
-const WRONG_KEY = 'interval_quiz_wrong';
-let reviewMode = false;
-let reviewQueue = [];
-let reviewIdx = 0;
-
-function getWrongNotes() {
-  try { return JSON.parse(localStorage.getItem(WRONG_KEY) || '[]'); }
-  catch { return []; }
+/* 음정 복습 모드 */
+function iStartReview(){
+  const list=iGetWrong();if(list.length===0)return;
+  const BASE_L=[0,2,4,5,7,9,11];
+  iReviewQueue=list.map(w=>{
+    const botSemi=BASE_L[w.bot.d]+w.bot.a;
+    const topSemi=BASE_L[w.top.d]+w.top.a+w.top.oc*12;
+    const gDiff=w.top.d-w.bot.d+1;
+    const g=w.top.oc>0?gDiff+7:gDiff;
+    return {bot:w.bot,top:w.top,iv:{n:w.ivName,cat:w.ivCat,g,s:topSemi-botSemi},key:w.key};
+  });
+  for(let i=iReviewQueue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[iReviewQueue[i],iReviewQueue[j]]=[iReviewQueue[j],iReviewQueue[i]];}
+  iReviewIdx=0;iReviewMode=true;iNok=0;iNng=0;iQnum=0;
+  ['i-cnt-ok','i-cnt-ng'].forEach(id=>document.getElementById(id).textContent=0);
+  document.getElementById('i-accuracy').textContent='—';
+  document.getElementById('i-review-banner').classList.add('active');
+  iUpdateReviewStatus();
+  document.getElementById('i-wrong-body').classList.remove('open');
+  document.getElementById('iw-arrow').textContent='▸';
+  iRenderReviewQ();
 }
-function saveWrongNotes(list) {
-  try { localStorage.setItem(WRONG_KEY, JSON.stringify(list)); } catch {}
-  updateWrongBadge();
+function iExitReview(){
+  iReviewMode=false;iReviewQueue=[];iReviewIdx=0;
+  document.getElementById('i-review-banner').classList.remove('active');
+  iNok=0;iNng=0;iQnum=0;
+  ['i-cnt-ok','i-cnt-ng'].forEach(id=>document.getElementById(id).textContent=0);
+  document.getElementById('i-accuracy').textContent='—';
+  iRenderQ();
 }
-
-function updateWrongBadge() {
-  const list = getWrongNotes();
-  const badge = document.getElementById('wrong-count-badge');
-  if (list.length > 0) {
-    badge.textContent = list.length + '개';
-    badge.style.display = '';
-  } else {
-    badge.style.display = 'none';
+function iUpdateReviewStatus(){document.getElementById('i-review-status').textContent=`📕 오답 복습 모드 — ${iReviewIdx+1} / ${iReviewQueue.length}문제`;}
+function iRenderReviewQ(){
+  if(iReviewIdx>=iReviewQueue.length){
+    document.getElementById('i-review-banner').classList.remove('active');iReviewMode=false;
+    document.getElementById('i-notes-wrap').innerHTML='<div style="font-size:32px;text-align:center;padding:10px 0">🎉</div>';
+    const badge=document.getElementById('i-q-badge');badge.className='qbadge d';badge.textContent='복습 완료!';
+    const fb=document.getElementById('i-feedback');fb.className='feedback ok';fb.innerHTML=`복습 완료! 정답률: <b>${Math.round(iNok/(iNok+iNng||1)*100)}%</b>`;fb.style.display='block';
+    document.getElementById('i-next-btn').style.display='none';document.getElementById('i-check-btn').disabled=true;
+    iUpdateWrongBadge();return;
   }
+  iAnswered=false;const rq=iReviewQueue[iReviewIdx];iCurQ=rq;iQnum++;
+  document.getElementById('i-q-num').textContent=iQnum;
+  const badge=document.getElementById('i-q-badge');badge.className='qbadge '+rq.iv.cat;badge.textContent=CAT_LABELS[rq.iv.cat];
+  const botOct=1,topOct=1+rq.top.oc;
+  document.getElementById('i-notes-wrap').innerHTML=iNoteHTML(rq.bot.d,rq.bot.a,botOct)+'<div class="arrow">→</div>'+iNoteHTML(rq.top.d,rq.top.a,topOct);
+  document.getElementById('i-q-sel').value='';document.getElementById('i-d-sel').value='';
+  document.getElementById('i-feedback').style.display='none';document.getElementById('i-keyboard-wrap').style.display='none';
+  document.getElementById('i-next-btn').style.display='none';document.getElementById('i-check-btn').disabled=false;
+  document.getElementById('i-prog-bar').style.width=Math.min(iReviewIdx/iReviewQueue.length*100,100)+'%';
+  iUpdateReviewStatus();
 }
 
-function qKey(q) {
-  // 고유 키: 아래음+위음 조합
-  return `${q.bot.d}_${q.bot.a}__${q.top.d}_${q.top.a}_${q.top.oc}`;
+/* 음정 기록 */
+const I_HISTORY_KEY='interval_quiz_history2';
+const I_SESSION_KEY='interval_quiz_session2';
+let iSessionStart=Date.now();
+function iGetHistory(){try{return JSON.parse(localStorage.getItem(I_HISTORY_KEY)||'[]');}catch{return[];}}
+function iSaveSession(){
+  if(iNok+iNng===0)return;
+  const cats=Object.entries(iEnabled).filter(([,v])=>v).map(([k])=>k);
+  const s={id:iSessionStart,date:formatDate(iSessionStart),correct:iNok,wrong:iNng,total:iNok+iNng,accuracy:Math.round(iNok/(iNok+iNng)*100),cats};
+  try{localStorage.setItem(I_SESSION_KEY,JSON.stringify(s));}catch{}
 }
-
-function addToWrongNotes(q) {
-  const list = getWrongNotes();
-  const key = qKey(q);
-  const existing = list.find(w => w.key === key);
-  if (existing) {
-    existing.wrongCount = (existing.wrongCount || 1) + 1;
-    existing.lastWrong = formatDate(Date.now());
-  } else {
-    list.unshift({
-      key,
-      bot: q.bot,
-      top: q.top,
-      ivName: q.iv.n,
-      ivCat: q.iv.cat,
-      wrongCount: 1,
-      lastWrong: formatDate(Date.now())
-    });
-  }
-  // 최대 100개
-  if (list.length > 100) list.splice(100);
-  saveWrongNotes(list);
+function iFinalizeSession(){
+  if(iNok+iNng<1)return;const raw=localStorage.getItem(I_SESSION_KEY);if(!raw)return;
+  try{const s=JSON.parse(raw);const h=iGetHistory();const idx=h.findIndex(x=>x.id===s.id);if(idx>=0)h[idx]=s;else h.unshift(s);if(h.length>50)h.splice(50);localStorage.setItem(I_HISTORY_KEY,JSON.stringify(h));localStorage.removeItem(I_SESSION_KEY);iRenderHistory();}catch{}
 }
-
-function removeFromWrongNotes(key) {
-  let list = getWrongNotes();
-  list = list.filter(w => w.key !== key);
-  saveWrongNotes(list);
-  renderWrongNotes();
-}
-
-function clearWrongNotes() {
-  if (!confirm('오답 목록을 모두 삭제할까요?')) return;
-  localStorage.removeItem(WRONG_KEY);
-  updateWrongBadge();
-  renderWrongNotes();
-}
-
-function toggleWrong() {
-  const body = document.getElementById('wrong-body');
-  const arrow = document.getElementById('w-arrow');
-  const isOpen = body.classList.toggle('open');
-  arrow.textContent = isOpen ? '▾' : '▸';
-  if (isOpen) renderWrongNotes();
-}
-
-function DEGS_NOTE(deg, acc) {
-  const D = ['도','레','미','파','솔','라','시'];
-  return D[deg] + (acc === -1 ? '♭' : acc === 1 ? '♯' : '');
-}
-
-function renderWrongNotes() {
-  const list = getWrongNotes();
-  const container = document.getElementById('wrong-content');
-  if (list.length === 0) {
-    container.innerHTML = '<div class="wrong-empty">오답 목록이 비어있어요!<br>틀린 문제가 자동으로 저장됩니다.</div>';
-    return;
-  }
-
-  const catLabel = { d:'온음계', c:'반음계', g:'겹음정' };
-  const items = list.map(w => {
-    const botStr = DEGS_NOTE(w.bot.d, w.bot.a) + '¹';
-    const topStr = DEGS_NOTE(w.top.d, w.top.a) + (w.top.oc ? '²' : '¹');
-    return `<div class="wrong-item">
-      <div>
-        <div class="wrong-item-notes">${botStr} → ${topStr}</div>
-        <div class="wrong-item-meta">
-          <span class="cat-dot ${w.ivCat}">${catLabel[w.ivCat]}</span>
-          틀린 횟수: ${w.wrongCount}회 · ${w.lastWrong}
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="wrong-item-ans">${w.ivName}</span>
-        <button class="wrong-del-btn" onclick="removeFromWrongNotes('${w.key}')" title="삭제">✕</button>
-      </div>
-    </div>`;
+function iClearHistory(){if(!confirm('기록을 모두 삭제할까요?'))return;localStorage.removeItem(I_HISTORY_KEY);localStorage.removeItem(I_SESSION_KEY);iRenderHistory();}
+function iToggleHistory(){const b=document.getElementById('i-history-body');const a=document.getElementById('ih-arrow');const o=b.classList.toggle('open');a.textContent=o?'▾':'▸';if(o)iRenderHistory();}
+const I_CAT_SHORT={d:'온음',c:'반음',g:'겹음'};
+function iRenderHistory(){
+  const h=iGetHistory();document.getElementById('i-history-count').textContent=h.length>0?`(${h.length}세션)`:'';
+  const c=document.getElementById('i-history-content');
+  if(h.length===0){c.innerHTML='<div class="history-empty">아직 저장된 기록이 없어요.<br>5문제 이상 풀면 자동으로 저장됩니다.</div>';return;}
+  const bestAcc=Math.max(...h.map(x=>x.accuracy));
+  const rows=h.map((x,i)=>{
+    const ac=x.accuracy>=80?'high':x.accuracy>=50?'mid':'low';
+    const isBest=x.accuracy===bestAcc&&i===h.findIndex(y=>y.accuracy===bestAcc);
+    const dots=x.cats.map(cat=>`<span class="cat-dot ${cat}">${I_CAT_SHORT[cat]}</span>`).join('');
+    return `<tr><td>${x.date}${isBest?'<span class="best-badge">🏆 최고</span>':''}</td><td>${x.correct}</td><td>${x.wrong}</td><td><span class="acc-pill ${ac}">${x.accuracy}%</span></td><td><div class="cat-dots">${dots}</div></td></tr>`;
   }).join('');
-
-  container.innerHTML = `
-    <button class="review-start-btn" onclick="startReview()">
-      📕 오답 복습 시작 (${list.length}문제)
-    </button>
-    <div class="wrong-list">${items}</div>`;
+  c.innerHTML=`<table class="history-table"><thead><tr><th>날짜</th><th>정답</th><th>오답</th><th>정답률</th><th>유형</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
-/* ── 복습 모드 ── */
-function startReview() {
-  const list = getWrongNotes();
-  if (list.length === 0) return;
-  reviewQueue = list.map(w => ({
-    bot: w.bot,
-    top: w.top,
-    iv: { n: w.ivName, cat: w.ivCat, g: w.top.oc ? w.top.d - w.bot.d + 1 + 7 : w.top.d - w.bot.d + 1, s: 0 },
-    key: w.key
-  }));
-  // shuffle
-  for (let i = reviewQueue.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [reviewQueue[i], reviewQueue[j]] = [reviewQueue[j], reviewQueue[i]];
+/* ═══════════════════════════════════════════
+   ■ 코드 퀴즈 (CHORD) — 코드종류+근음 제시 → 3도/5도 맞추기
+════════════════════════════════════════════ */
+const NOTE_KO=['도','레♭','레','미♭','미','파','파♯','솔','라♭','라','시♭','시'];
+
+const CHORD_TYPES={
+  major:{ label:'장3화음', thirdLabel:'3도음', thirdSemi:4, fifthSemi:7 },
+  minor:{ label:'단3화음', thirdLabel:'3도음', thirdSemi:3, fifthSemi:7 },
+  dim:  { label:'감3화음', thirdLabel:'3도음', thirdSemi:3, fifthSemi:6 },
+  aug:  { label:'증3화음', thirdLabel:'3도음', thirdSemi:4, fifthSemi:8 },
+  sus4: { label:'sus4',   thirdLabel:'4도음', thirdSemi:5, fifthSemi:7 },
+};
+
+const cEnabled={major:true,minor:true,dim:true,aug:true,sus4:true};
+let cCurQ=null, cAnswered=false, cNok=0, cNng=0, cQnum=0;
+let cSelectedThird=null, cSelectedFifth=null;
+let cReviewMode=false, cReviewQueue=[], cReviewIdx=0;
+
+function cPool(){ return Object.entries(cEnabled).filter(([,v])=>v).map(([k])=>k); }
+function cToggleType(type){
+  const active=Object.values(cEnabled).filter(Boolean).length;
+  if(cEnabled[type]&&active===1)return;
+  cEnabled[type]=!cEnabled[type];
+  document.getElementById('btn-'+type).className='fbt'+(cEnabled[type]?' on-'+type:'');
+}
+
+function cGenQ(){
+  const p=cPool(); if(!p.length)return null;
+  const type=p[Math.floor(Math.random()*p.length)];
+  const root=Math.floor(Math.random()*12);
+  const {thirdSemi,fifthSemi}=CHORD_TYPES[type];
+  return {root, third:(root+thirdSemi)%12, fifth:(root+fifthSemi)%12, type};
+}
+
+function cBuildDrops(){
+  const opts = '<option value="">— 선택 —</option>' +
+    NOTE_KO.map((n,i)=>`<option value="${i}">${n}</option>`).join('');
+  document.getElementById('c-sel-third').innerHTML = opts;
+  document.getElementById('c-sel-fifth').innerHTML = opts;
+  document.getElementById('c-sel-third').disabled = false;
+  document.getElementById('c-sel-fifth').disabled = false;
+  document.getElementById('c-sel-third').className = 'chord-select';
+  document.getElementById('c-sel-fifth').className = 'chord-select';
+}
+
+function cPickDrop(role){
+  if(cAnswered)return;
+  const sel=document.getElementById(role==='third'?'c-sel-third':'c-sel-fifth');
+  const val=sel.value===''?null:parseInt(sel.value);
+  if(role==='third') cSelectedThird=val;
+  else cSelectedFifth=val;
+  document.getElementById('c-check-btn').disabled=!(cSelectedThird!==null&&cSelectedFifth!==null);
+}
+
+function cResetPick(){
+  if(cAnswered)return;
+  cSelectedThird=null; cSelectedFifth=null;
+  document.getElementById('c-sel-third').value='';
+  document.getElementById('c-sel-fifth').value='';
+  document.getElementById('c-sel-third').className='chord-select';
+  document.getElementById('c-sel-fifth').className='chord-select';
+  document.getElementById('c-check-btn').disabled=true;
+}
+
+function cRenderQ(){
+  cAnswered=false; cSelectedThird=null; cSelectedFifth=null;
+  const q=cGenQ(); if(!q)return;
+  cCurQ=q; cQnum++;
+  document.getElementById('c-q-num').textContent=cQnum;
+  document.getElementById('c-prog-bar').style.width=Math.min((cQnum-1)/20*100,100)+'%';
+  const badge=document.getElementById('c-q-badge');
+  badge.className='qbadge '+q.type; badge.textContent=CHORD_TYPES[q.type].label;
+  document.getElementById('c-root-display').textContent=NOTE_KO[q.root];
+  const tLbl=CHORD_TYPES[q.type].thirdLabel;
+  document.getElementById('c-third-label').textContent=tLbl;
+  document.getElementById('c-slot-root').textContent=NOTE_KO[q.root];
+  document.getElementById('c-structure-hint').style.display='none';
+  cBuildDrops();
+  document.getElementById('c-check-btn').disabled=true;
+  document.getElementById('c-reset-btn').disabled=false;
+  document.getElementById('c-feedback').style.display='none';
+  document.getElementById('c-keyboard-wrap').style.display='none';
+  document.getElementById('c-next-btn').style.display='none';
+}
+
+function cCheckAns(){
+  if(cAnswered||cSelectedThird===null||cSelectedFifth===null)return;
+  cAnswered=true;
+  document.getElementById('c-check-btn').disabled=true;
+  document.getElementById('c-reset-btn').disabled=true;
+
+  const {root,third,fifth,type}=cCurQ;
+  const rightThird=cSelectedThird===third;
+  const rightFifth=cSelectedFifth===fifth;
+  const isRight=rightThird&&rightFifth;
+
+  if(isRight)cNok++;else cNng++;
+  document.getElementById('c-cnt-ok').textContent=cNok;
+  document.getElementById('c-cnt-ng').textContent=cNng;
+  document.getElementById('c-accuracy').textContent=Math.round(cNok/(cNok+cNng)*100)+'%';
+  if(cNok+cNng>=5)cSaveSession();
+
+  const {thirdSemi,fifthSemi,thirdLabel}=CHORD_TYPES[type];
+  const rootName=NOTE_KO[root];
+  const thirdName=NOTE_KO[third];
+  const fifthName=NOTE_KO[fifth];
+  const fb=document.getElementById('c-feedback');
+  fb.style.display='block';
+
+  // 드롭다운 색상 피드백
+  const selT=document.getElementById('c-sel-third');
+  const selF=document.getElementById('c-sel-fifth');
+  selT.disabled=true; selF.disabled=true;
+  selT.className='chord-select '+(rightThird?'ok':'ng');
+  selF.className='chord-select '+(rightFifth?'ok':'ng');
+  if(!rightThird){ selT.innerHTML=`<option value="${third}">${thirdName}</option>`; selT.value=String(third); }
+  if(!rightFifth){ selF.innerHTML=`<option value="${fifth}">${fifthName}</option>`; selF.value=String(fifth); }
+
+  if(isRight){
+    fb.className='feedback ok';
+    fb.innerHTML=`✓ 정답! <b>${rootName}–${thirdName}–${fifthName}</b><br>${thirdLabel}: +${thirdSemi}반음 · 5도음: +${fifthSemi}반음`;
+  } else {
+    fb.className='feedback ng';
+    let detail='';
+    if(!rightThird)detail+=`${thirdLabel}: 내 답 <b>${NOTE_KO[cSelectedThird]}</b> → 정답 <b>${thirdName}</b> (+${thirdSemi}반음)<br>`;
+    if(!rightFifth) detail+=`5도음: 내 답 <b>${NOTE_KO[cSelectedFifth]}</b> → 정답 <b>${fifthName}</b> (+${fifthSemi}반음)<br>`;
+    fb.innerHTML=`✗ 오답. 정답: <b>${rootName}–${thirdName}–${fifthName}</b><br>${detail}<span style="font-size:11px;color:var(--ng-text)">📕 오답 노트에 저장됨</span>`;
+    if(!cReviewMode)cAddWrong(cCurQ);
   }
-  reviewIdx = 0;
-  reviewMode = true;
-  nOk = 0; nNg = 0; qNum = 0;
-  document.getElementById('cnt-ok').textContent = 0;
-  document.getElementById('cnt-ng').textContent = 0;
-  document.getElementById('accuracy').textContent = '—';
-  document.getElementById('review-banner').classList.add('active');
-  updateReviewStatus();
-  // 오답 노트 패널 닫기
-  const body = document.getElementById('wrong-body');
-  const arrow = document.getElementById('w-arrow');
-  body.classList.remove('open');
-  arrow.textContent = '▸';
-  renderReviewQ();
-}
 
-function exitReview() {
-  reviewMode = false;
-  reviewQueue = [];
-  reviewIdx = 0;
-  document.getElementById('review-banner').classList.remove('active');
-  nOk = 0; nNg = 0; qNum = 0;
-  document.getElementById('cnt-ok').textContent = 0;
-  document.getElementById('cnt-ng').textContent = 0;
-  document.getElementById('accuracy').textContent = '—';
-  renderQ();
-}
+  const hint=document.getElementById('c-structure-hint');
+  hint.style.display='flex';
+  document.getElementById('c-hint-root').textContent=`근음: ${rootName}`;
+  document.getElementById('c-hint-third').textContent=`${thirdLabel}: ${thirdName} (+${thirdSemi}반음)`;
+  document.getElementById('c-hint-fifth').textContent=`5도음: ${fifthName} (+${fifthSemi}반음)`;
 
-function updateReviewStatus() {
-  const remaining = reviewQueue.length;
-  document.getElementById('review-status').textContent =
-    `📕 오답 복습 모드 — ${reviewIdx + 1} / ${remaining}문제`;
-}
-
-function renderReviewQ() {
-  if (reviewIdx >= reviewQueue.length) {
-    // 복습 완료
-    document.getElementById('review-banner').classList.remove('active');
-    reviewMode = false;
-    // 완료 메시지
-    document.getElementById('notes-wrap').innerHTML = '<div style="font-size:32px;text-align:center;padding:10px 0">🎉</div>';
-    const badge = document.getElementById('q-badge');
-    badge.className = 'qbadge d';
-    badge.textContent = '복습 완료!';
-    document.getElementById('feedback').className = 'feedback ok';
-    document.getElementById('feedback').innerHTML = `복습 완료! 정답률: <b>${Math.round(nOk/(nOk+nNg||1)*100)}%</b><br>오답 노트에서 다시 확인해보세요.`;
-    document.getElementById('feedback').style.display = 'block';
-    document.getElementById('keyboard-wrap').style.display = 'none';
-    document.getElementById('next-btn').style.display = 'none';
-    document.getElementById('check-btn').disabled = true;
-    updateWrongBadge();
-    return;
+  if(cReviewMode){
+    if(isRight)cRemoveWrong(cCurQ.key);
+    else{const wl=cGetWrong();const wi=wl.find(w=>w.key===cCurQ.key);if(wi){wi.wrongCount++;wi.lastWrong=formatDate(Date.now());cSaveWrong(wl);}}
+    cReviewIdx++;
   }
 
-  answered = false;
-  const rq = reviewQueue[reviewIdx];
-
-  // curQ 형식에 맞게 세팅 (iv.g는 건반 렌더에만 쓰임, s는 반음계산)
-  const { BASE: B } = (() => {
-    const BASE = [0,2,4,5,7,9,11];
-    return { BASE };
-  })();
-  const BASE_LOCAL = [0,2,4,5,7,9,11];
-  const botSemi = BASE_LOCAL[rq.bot.d] + rq.bot.a;
-  const topSemi = BASE_LOCAL[rq.top.d] + rq.top.a + rq.top.oc * 12;
-  const semitones = topSemi - botSemi;
-
-  // iv.s 계산
-  rq.iv.s = semitones;
-  // iv.g 계산
-  const gDiff = rq.top.d - rq.bot.d + 1;
-  rq.iv.g = rq.top.oc > 0 ? gDiff + 7 : gDiff;
-
-  curQ = rq;
-  qNum++;
-
-  document.getElementById('q-num').textContent = qNum;
-  const badge = document.getElementById('q-badge');
-  badge.className = 'qbadge ' + rq.iv.cat;
-  badge.textContent = CAT_LABELS[rq.iv.cat];
-
-  const botOct = 1;
-  const topOct = 1 + rq.top.oc;
-  document.getElementById('notes-wrap').innerHTML =
-    noteHTML(rq.bot.d, rq.bot.a, botOct) +
-    '<div class="arrow">→</div>' +
-    noteHTML(rq.top.d, rq.top.a, topOct);
-
-  document.getElementById('q-sel').value = '';
-  document.getElementById('d-sel').value = '';
-  document.getElementById('feedback').style.display = 'none';
-  document.getElementById('keyboard-wrap').style.display = 'none';
-  document.getElementById('next-btn').style.display = 'none';
-  document.getElementById('check-btn').disabled = false;
-  document.getElementById('prog-bar').style.width = Math.min((reviewIdx)/reviewQueue.length*100, 100) + '%';
-  updateReviewStatus();
+  cRenderKeyboard(root,third,fifth,type);
+  document.getElementById('c-next-btn').style.display='block';
 }
 
-// 페이지 떠날 때 세션 확정 저장
-window.addEventListener('beforeunload', finalizeSession);
+function cNextQ(){ if(cReviewMode)cRenderReviewQ();else cRenderQ(); }
 
-// 페이지 로드 시 이전 임시 세션 확정 + 기록 수 표시
-(function initHistory() {
-  const raw = localStorage.getItem(SESSION_KEY);
-  if (raw) {
-    try {
-      const prev = JSON.parse(raw);
-      if (prev.id !== sessionStart) {
-        const history = getHistory();
-        const idx = history.findIndex(h => h.id === prev.id);
-        if (idx >= 0) history[idx] = prev;
-        else history.unshift(prev);
-        if (history.length > 50) history.splice(50);
-        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-        localStorage.removeItem(SESSION_KEY);
-      }
-    } catch {}
+/* 코드 건반 시각화 */
+const CHORD_COLORS={root:{white:'#6ee7b7',black:'#059669'},third:{white:'#c4b5fd',black:'#7c3aed'},fifth:{white:'#93c5fd',black:'#2563eb'}};
+const C_WHITE_SET=new Set([0,2,4,5,7,9,11]);
+function cRenderKeyboard(root,third,fifth,type){
+  const WW=26,WH=72,BW=15,BH=45,TOP_PAD=20,BOT_PAD=22;
+  const keys=[];
+  for(let s=0;s<=23;s++)keys.push({s,c:s%12,isWhite:C_WHITE_SET.has(s%12)});
+  let wx=4;const pos={};
+  keys.forEach(k=>{if(k.isWhite){pos[k.s]=wx;wx+=WW;}});
+  keys.forEach(k=>{if(!k.isWhite&&pos[k.s-1]!==undefined)pos[k.s]=pos[k.s-1]+WW-BW/2;});
+  const svgW=wx+4,svgH=TOP_PAD+WH+BOT_PAD,KY=TOP_PAD,parts=[];
+  const getRole=s=>{const c=s%12;if(c===root)return'root';if(c===third)return'third';if(c===fifth)return'fifth';return null;};
+  keys.filter(k=>k.isWhite).forEach(k=>{
+    const x=pos[k.s];const role=getRole(k.s);let fill='#fff';if(role)fill=CHORD_COLORS[role].white;
+    parts.push(`<rect x="${x}" y="${KY}" width="${WW-1}" height="${WH}" rx="3" fill="${fill}" stroke="#ccc" stroke-width="1"/>`);
+  });
+  keys.filter(k=>!k.isWhite).forEach(k=>{
+    const x=pos[k.s];if(x===undefined)return;const role=getRole(k.s);let fill='#1e1e1e';if(role)fill=CHORD_COLORS[role].black;
+    parts.push(`<rect x="${x}" y="${KY}" width="${BW}" height="${BH}" rx="2" fill="${fill}"/>`);
+  });
+  const labeled=new Set();
+  keys.forEach(k=>{
+    const role=getRole(k.s);if(!role)return;
+    const labelKey=`${role}-${Math.floor(k.s/12)}`;if(labeled.has(labelKey))return;labeled.add(labelKey);
+    if(pos[k.s]===undefined)return;
+    const cx=pos[k.s]+(k.isWhite?WW/2-0.5:BW/2);
+    const roleColors={root:'#065f46',third:'#4c1d95',fifth:'#1e3a8a'};
+    parts.push(`<text x="${cx}" y="${KY+WH+15}" text-anchor="middle" font-size="10" font-family="'Noto Sans KR',sans-serif" fill="${roleColors[role]}" font-weight="700">${NOTE_KO[k.c]}</text>`);
+  });
+  if(pos[12]!==undefined)parts.push(`<line x1="${pos[12]}" y1="${KY}" x2="${pos[12]}" y2="${KY+WH}" stroke="#aaa" stroke-width="1" stroke-dasharray="3,2"/>`);
+  const svg=`<svg width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg" style="display:block;min-width:${svgW}px">${parts.join('')}</svg>`;
+  document.getElementById('c-kb-svg-container').innerHTML=svg;
+  const thirdRole=type==='sus4'?'4도음':'3도음';
+  document.getElementById('c-kb-legend').innerHTML=[
+    {color:CHORD_COLORS.root.white,label:`근음 ${NOTE_KO[root]}`},
+    {color:CHORD_COLORS.third.white,label:`${thirdRole} ${NOTE_KO[third]}`},
+    {color:CHORD_COLORS.fifth.white,label:`5도음 ${NOTE_KO[fifth]}`},
+  ].map(l=>`<div class="kb-legend-item"><div class="kb-legend-dot" style="background:${l.color};border:1.5px solid #ccc"></div><span>${l.label}</span></div>`).join('');
+  document.getElementById('c-keyboard-wrap').style.display='block';
+}
+
+/* 코드 오답 노트 */
+const C_WRONG_KEY='chord_quiz_wrong2';
+function cQKey(q){return `${q.root}_${q.type}`;}
+function cGetWrong(){try{return JSON.parse(localStorage.getItem(C_WRONG_KEY)||'[]');}catch{return[];}}
+function cSaveWrong(list){try{localStorage.setItem(C_WRONG_KEY,JSON.stringify(list));}catch{}cUpdateWrongBadge();}
+function cUpdateWrongBadge(){const list=cGetWrong();const b=document.getElementById('c-wrong-count-badge');if(list.length>0){b.textContent=list.length+'개';b.style.display='';}else b.style.display='none';}
+function cAddWrong(q){
+  const list=cGetWrong();const key=cQKey(q);const ex=list.find(w=>w.key===key);
+  if(ex){ex.wrongCount=(ex.wrongCount||1)+1;ex.lastWrong=formatDate(Date.now());}
+  else list.unshift({key,root:q.root,type:q.type,wrongCount:1,lastWrong:formatDate(Date.now())});
+  if(list.length>100)list.splice(100);cSaveWrong(list);
+}
+function cRemoveWrong(key){let list=cGetWrong();list=list.filter(w=>w.key!==key);cSaveWrong(list);cRenderWrong();}
+function cClearWrongNotes(){if(!confirm('오답 목록을 모두 삭제할까요?'))return;localStorage.removeItem(C_WRONG_KEY);cUpdateWrongBadge();cRenderWrong();}
+function cToggleWrong(){const b=document.getElementById('c-wrong-body');const a=document.getElementById('cw-arrow');const o=b.classList.toggle('open');a.textContent=o?'▾':'▸';if(o)cRenderWrong();}
+function cRenderWrong(){
+  const list=cGetWrong();const c=document.getElementById('c-wrong-content');
+  if(list.length===0){c.innerHTML='<div class="wrong-empty">오답 목록이 비어있어요!</div>';return;}
+  const items=list.map(w=>{
+    const {thirdSemi,fifthSemi}=CHORD_TYPES[w.type];
+    const third=(w.root+thirdSemi)%12,fifth=(w.root+fifthSemi)%12;
+    const chord=`${NOTE_KO[w.root]}–${NOTE_KO[third]}–${NOTE_KO[fifth]}`;
+    return `<div class="wrong-item"><div><div class="wrong-item-chord">${NOTE_KO[w.root]} <span class="type-badge ${w.type}">${CHORD_TYPES[w.type].label}</span></div><div class="wrong-item-meta">틀린 횟수: ${w.wrongCount}회 · ${w.lastWrong}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="wrong-item-ans">${chord}</span><button class="wrong-del-btn" onclick="cRemoveWrong('${w.key}')">✕</button></div></div>`;
+  }).join('');
+  c.innerHTML=`<button class="review-start-btn" onclick="cStartReview()">📕 오답 복습 시작 (${list.length}문제)</button><div class="wrong-list">${items}</div>`;
+}
+
+/* 코드 복습 모드 */
+function cStartReview(){
+  const list=cGetWrong();if(list.length===0)return;
+  cReviewQueue=list.map(w=>{
+    const {thirdSemi,fifthSemi}=CHORD_TYPES[w.type];
+    return {root:w.root,third:(w.root+thirdSemi)%12,fifth:(w.root+fifthSemi)%12,type:w.type,key:w.key};
+  });
+  for(let i=cReviewQueue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cReviewQueue[i],cReviewQueue[j]]=[cReviewQueue[j],cReviewQueue[i]];}
+  cReviewIdx=0;cReviewMode=true;cNok=0;cNng=0;cQnum=0;
+  ['c-cnt-ok','c-cnt-ng'].forEach(id=>document.getElementById(id).textContent=0);
+  document.getElementById('c-accuracy').textContent='—';
+  document.getElementById('c-review-banner').classList.add('active');
+  cUpdateReviewStatus();
+  document.getElementById('c-wrong-body').classList.remove('open');
+  document.getElementById('cw-arrow').textContent='▸';
+  cRenderReviewQ();
+}
+function cExitReview(){
+  cReviewMode=false;cReviewQueue=[];cReviewIdx=0;
+  document.getElementById('c-review-banner').classList.remove('active');
+  cNok=0;cNng=0;cQnum=0;
+  ['c-cnt-ok','c-cnt-ng'].forEach(id=>document.getElementById(id).textContent=0);
+  document.getElementById('c-accuracy').textContent='—';
+  cRenderQ();
+}
+function cUpdateReviewStatus(){document.getElementById('c-review-status').textContent=`📕 오답 복습 모드 — ${cReviewIdx+1} / ${cReviewQueue.length}문제`;}
+function cRenderReviewQ(){
+  if(cReviewIdx>=cReviewQueue.length){
+    document.getElementById('c-review-banner').classList.remove('active');cReviewMode=false;
+    document.getElementById('c-root-display').textContent='🎉';
+    const fb=document.getElementById('c-feedback');fb.className='feedback ok';fb.innerHTML=`복습 완료! 정답률: <b>${Math.round(cNok/(cNok+cNng||1)*100)}%</b>`;fb.style.display='block';
+    document.getElementById('c-next-btn').style.display='none';document.getElementById('c-check-btn').disabled=true;
+    cUpdateWrongBadge();return;
   }
-  updateWrongBadge();
-  const hist = getHistory();
-  if (hist.length > 0) {
-    document.getElementById('history-count').textContent = '(' + hist.length + '세션)';
-  }
+  cAnswered=false; cSelectedThird=null; cSelectedFifth=null;
+  const rq=cReviewQueue[cReviewIdx];cCurQ=rq;cQnum++;
+  document.getElementById('c-q-num').textContent=cQnum;
+  document.getElementById('c-prog-bar').style.width=Math.min(cReviewIdx/cReviewQueue.length*100,100)+'%';
+  const badge=document.getElementById('c-q-badge');
+  badge.className='qbadge '+rq.type; badge.textContent=CHORD_TYPES[rq.type].label;
+  document.getElementById('c-root-display').textContent=NOTE_KO[rq.root];
+  const tLbl=CHORD_TYPES[rq.type].thirdLabel;
+  document.getElementById('c-third-label').textContent=tLbl;
+  document.getElementById('c-slot-root').textContent=NOTE_KO[rq.root];
+  document.getElementById('c-structure-hint').style.display='none';
+  cBuildDrops();
+  document.getElementById('c-check-btn').disabled=true;
+  document.getElementById('c-reset-btn').disabled=false;
+  document.getElementById('c-feedback').style.display='none';
+  document.getElementById('c-keyboard-wrap').style.display='none';
+  document.getElementById('c-next-btn').style.display='none';
+  cUpdateReviewStatus();
+}
+
+/* 코드 기록 */
+const C_HISTORY_KEY='chord_quiz_history2';
+const C_SESSION_KEY='chord_quiz_session2';
+let cSessionStart=Date.now();
+function cGetHistory(){try{return JSON.parse(localStorage.getItem(C_HISTORY_KEY)||'[]');}catch{return[];}}
+function cSaveSession(){
+  if(cNok+cNng===0)return;
+  const types=Object.entries(cEnabled).filter(([,v])=>v).map(([k])=>k);
+  const s={id:cSessionStart,date:formatDate(cSessionStart),correct:cNok,wrong:cNng,total:cNok+cNng,accuracy:Math.round(cNok/(cNok+cNng)*100),types};
+  try{localStorage.setItem(C_SESSION_KEY,JSON.stringify(s));}catch{}
+}
+function cFinalizeSession(){
+  if(cNok+cNng<1)return;const raw=localStorage.getItem(C_SESSION_KEY);if(!raw)return;
+  try{const s=JSON.parse(raw);const h=cGetHistory();const idx=h.findIndex(x=>x.id===s.id);if(idx>=0)h[idx]=s;else h.unshift(s);if(h.length>50)h.splice(50);localStorage.setItem(C_HISTORY_KEY,JSON.stringify(h));localStorage.removeItem(C_SESSION_KEY);cRenderHistory();}catch{}
+}
+function cClearHistory(){if(!confirm('기록을 모두 삭제할까요?'))return;localStorage.removeItem(C_HISTORY_KEY);localStorage.removeItem(C_SESSION_KEY);cRenderHistory();}
+function cToggleHistory(){const b=document.getElementById('c-history-body');const a=document.getElementById('ch-arrow');const o=b.classList.toggle('open');a.textContent=o?'▾':'▸';if(o)cRenderHistory();}
+const C_TYPE_SHORT={major:'장',minor:'단',dim:'감',aug:'증',sus4:'sus4'};
+function cRenderHistory(){
+  const h=cGetHistory();document.getElementById('c-history-count').textContent=h.length>0?`(${h.length}세션)`:'';
+  const c=document.getElementById('c-history-content');
+  if(h.length===0){c.innerHTML='<div class="history-empty">아직 저장된 기록이 없어요.<br>5문제 이상 풀면 자동으로 저장됩니다.</div>';return;}
+  const bestAcc=Math.max(...h.map(x=>x.accuracy));
+  const rows=h.map((x,i)=>{
+    const ac=x.accuracy>=80?'high':x.accuracy>=50?'mid':'low';
+    const isBest=x.accuracy===bestAcc&&i===h.findIndex(y=>y.accuracy===bestAcc);
+    const dots=(x.types||[]).map(t=>`<span class="type-badge ${t}">${C_TYPE_SHORT[t]}</span>`).join(' ');
+    return `<tr><td>${x.date}${isBest?'<span class="best-badge">🏆 최고</span>':''}</td><td>${x.correct}</td><td>${x.wrong}</td><td><span class="acc-pill ${ac}">${x.accuracy}%</span></td><td>${dots}</td></tr>`;
+  }).join('');
+  c.innerHTML=`<table class="history-table"><thead><tr><th>날짜</th><th>정답</th><th>오답</th><th>정답률</th><th>유형</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+/* ── 초기화 ── */
+window.addEventListener('beforeunload',()=>{iFinalizeSession();cFinalizeSession();});
+
+(function init(){
+  // 음정 기록
+  const iRaw=localStorage.getItem(I_SESSION_KEY);
+  if(iRaw){try{const p=JSON.parse(iRaw);if(p.id!==iSessionStart){const h=iGetHistory();const idx=h.findIndex(x=>x.id===p.id);if(idx>=0)h[idx]=p;else h.unshift(p);if(h.length>50)h.splice(50);localStorage.setItem(I_HISTORY_KEY,JSON.stringify(h));localStorage.removeItem(I_SESSION_KEY);}}catch{}}
+  // 코드 기록
+  const cRaw=localStorage.getItem(C_SESSION_KEY);
+  if(cRaw){try{const p=JSON.parse(cRaw);if(p.id!==cSessionStart){const h=cGetHistory();const idx=h.findIndex(x=>x.id===p.id);if(idx>=0)h[idx]=p;else h.unshift(p);if(h.length>50)h.splice(50);localStorage.setItem(C_HISTORY_KEY,JSON.stringify(h));localStorage.removeItem(C_SESSION_KEY);}}catch{}}
+  iUpdateWrongBadge(); cUpdateWrongBadge();
+  const ih=iGetHistory();if(ih.length>0)document.getElementById('i-history-count').textContent=`(${ih.length}세션)`;
+  const ch=cGetHistory();if(ch.length>0)document.getElementById('c-history-count').textContent=`(${ch.length}세션)`;
+  iRenderQ();
+  cRenderQ();
 })();
-
-renderQ();
 </script>
 </body>
 </html>
